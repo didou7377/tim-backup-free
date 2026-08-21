@@ -1,0 +1,16 @@
+/.git
+/.github
+/.gitignore
+/.distignore
+/.phpcs-cache
+/node_modules
+/vendor
+/tests
+/tools
+/composer.json
+/composer.lock
+/package.json
+/package-lock.json
+/phpcs.xml.dist
+/PROJECT.md
+/SECURITY.md

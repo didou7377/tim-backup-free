@@ -1,0 +1,93 @@
+name: Quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  coding-standards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP quality tools
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run WordPress Coding Standards
+        run: composer check
+
+      - name: Install gettext tools
+        run: sudo apt-get update && sudo apt-get install --yes gettext
+
+      - name: Validate translations
+        run: |
+          msgfmt --check --check-format --output-file=/tmp/tim-backup-de_DE.mo languages/tim-backup-de_DE.po
+          msgcmp --use-fuzzy languages/tim-backup-de_DE.po languages/tim-backup.pot
+
+  wordpress-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install test tools
+        run: npm ci
+
+      - name: Run syntax and WordPress smoke tests
+        run: npm test
+
+  mysql-restore:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: wordpress
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP and WP-CLI
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mysqli, zip
+          coverage: none
+          tools: wp-cli
+
+      - name: Install ephemeral WordPress
+        run: |
+          mkdir --parents "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup"
+          wp core download --path="$RUNNER_TEMP/wordpress" --version=7.1 --force
+          wp config create --path="$RUNNER_TEMP/wordpress" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306
+          wp core install --path="$RUNNER_TEMP/wordpress" --url=https://tim-backup.test --title="TIM Backup Test" --admin_user=admin --admin_password=test-password --admin_email=test@example.com --skip-email
+          rsync --archive --exclude=.git --exclude=node_modules --exclude=vendor ./ "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup/"
+          wp plugin activate tim-backup --path="$RUNNER_TEMP/wordpress"
+
+      - name: Run destructive database restore test
+        run: wp eval-file "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup/tests/mysql-restore.php" --path="$RUNNER_TEMP/wordpress"

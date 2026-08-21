@@ -1,0 +1,29 @@
+{
+  "name": "tim-plugins/tim-backup",
+  "description": "Secure local backup and restore plugin for WordPress.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.1",
+    "ext-json": "*",
+    "ext-zip": "*"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.2.1",
+    "wp-coding-standards/wpcs": "^3.4.1"
+  },
+  "scripts": {
+    "lint": "phpcs",
+    "lint:fix": "phpcbf",
+    "check": [
+      "@composer validate --strict",
+      "@lint"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  }
+}

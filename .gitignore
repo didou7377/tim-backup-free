@@ -1,0 +1,12 @@
+/vendor/
+/node_modules/
+/build/
+/.phpcs-cache
+/.DS_Store
+*.log
+*.zip
+*.sql
+*.sqlite
+.env
+.env.*
+!.env.example

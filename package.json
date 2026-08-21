@@ -1,0 +1,16 @@
+{
+  "name": "tim-backup-free",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local WordPress Playground tooling for TIM Backup.",
+  "scripts": {
+    "playground": "wp-playground-cli start --auto-mount",
+    "test": "npm run test:php && npm run test:smoke",
+    "test:php": "node tools/php-syntax-check.mjs",
+    "test:smoke": "wp-playground-cli run-blueprint --blueprint=tests/playground-smoke.json --mount=.:/wordpress/wp-content/plugins/tim-backup --verbosity=normal"
+  },
+  "devDependencies": {
+    "@wp-playground/cli": "^3.1.50",
+    "php-parser": "^3.7.0"
+  }
+}
