@@ -526,8 +526,8 @@ final class TIM_Backup_Backup_Service {
 			$offset = 0;
 
 			do {
-				$query = $wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Identifiers are strictly validated before interpolation.
-					'SELECT * FROM `' . esc_sql( $table ) . '`' . $order_by . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Identifiers are strictly validated.
+				$query = $wpdb->prepare(
+					'SELECT * FROM `' . esc_sql( $table ) . '`' . $order_by . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Identifiers are strictly validated.
 					self::DATABASE_BATCH_SIZE,
 					$offset
 				);
@@ -563,7 +563,7 @@ final class TIM_Backup_Backup_Service {
 
 				$row_count = count( $rows );
 				$offset   += self::DATABASE_BATCH_SIZE;
-			} while ( $row_count === self::DATABASE_BATCH_SIZE );
+			} while ( self::DATABASE_BATCH_SIZE === $row_count );
 
 			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
