@@ -9,7 +9,7 @@
  * Author:            TIM Plugins
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       tim-backup
+ * Text Domain:       tim-backup-free
  * Domain Path:       /languages
  *
  * @package TIM_Backup

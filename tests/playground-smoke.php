@@ -15,11 +15,11 @@ if ( ! wp_next_scheduled( 'tim_backup_weekly_event' ) ) {
 	throw new RuntimeException( 'Weekly backup was not scheduled.' );
 }
 
-unload_textdomain( 'tim-backup' );
+unload_textdomain( 'tim-backup-free' );
 
 if (
-	! load_textdomain( 'tim-backup', TIM_BACKUP_DIR . 'languages/tim-backup-de_DE.mo' )
-	|| 'Übersicht' !== __( 'Overview', 'tim-backup' )
+	! load_textdomain( 'tim-backup-free', TIM_BACKUP_DIR . 'languages/tim-backup-free-de_DE.mo' )
+	|| 'Übersicht' !== __( 'Overview', 'tim-backup-free' )
 ) {
 	throw new RuntimeException( 'Bundled German translation did not load.' );
 }

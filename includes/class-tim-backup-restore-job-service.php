@@ -118,7 +118,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$this->storage->release_lock( 'restore-job', $job_lock );
 			return new WP_Error(
 				'tim_backup_restore_job_active',
-				__( 'Another database restore is already in progress.', 'tim-backup' )
+				__( 'Another database restore is already in progress.', 'tim-backup-free' )
 			);
 		}
 
@@ -178,7 +178,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$this->storage->release_lock( 'restore-job', $job_lock );
 			return new WP_Error(
 				'tim_backup_restore_job_missing',
-				__( 'No database restore job is available.', 'tim-backup' )
+				__( 'No database restore job is available.', 'tim-backup-free' )
 			);
 		}
 
@@ -229,7 +229,7 @@ final class TIM_Backup_Restore_Job_Service {
 				default:
 					$result = new WP_Error(
 						'tim_backup_restore_phase_invalid',
-						__( 'The database restore has an invalid saved phase.', 'tim-backup' )
+						__( 'The database restore has an invalid saved phase.', 'tim-backup-free' )
 					);
 			}
 
@@ -269,7 +269,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! is_array( $job ) ) {
 			return new WP_Error(
 				'tim_backup_restore_job_missing',
-				__( 'No database restore job is available.', 'tim-backup' )
+				__( 'No database restore job is available.', 'tim-backup-free' )
 			);
 		}
 
@@ -299,7 +299,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$this->storage->release_lock( 'restore-job', $job_lock );
 			return new WP_Error(
 				'tim_backup_restore_job_missing',
-				__( 'No database restore job is available.', 'tim-backup' )
+				__( 'No database restore job is available.', 'tim-backup-free' )
 			);
 		}
 
@@ -316,7 +316,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$this->storage->release_lock( 'restore-job', $job_lock );
 			return new WP_Error(
 				'tim_backup_restore_cancel_too_late',
-				__( 'The restore can no longer be cancelled because database activation has started.', 'tim-backup' )
+				__( 'The restore can no longer be cancelled because database activation has started.', 'tim-backup-free' )
 			);
 		}
 
@@ -428,7 +428,7 @@ final class TIM_Backup_Restore_Job_Service {
 			} elseif ( str_starts_with( $entry, 'tim-backup/database/' ) ) {
 				return new WP_Error(
 					'tim_backup_restore_database_entry_invalid',
-					__( 'The verified backup contains an unexpected database entry.', 'tim-backup' )
+					__( 'The verified backup contains an unexpected database entry.', 'tim-backup-free' )
 				);
 			}
 		}
@@ -436,7 +436,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! isset( $entries['tim-backup/database/schema.json'] ) || count( $entries ) < 2 ) {
 			return new WP_Error(
 				'tim_backup_restore_database_missing',
-				__( 'The verified backup does not contain a restorable database.', 'tim-backup' )
+				__( 'The verified backup does not contain a restorable database.', 'tim-backup-free' )
 			);
 		}
 
@@ -478,7 +478,7 @@ final class TIM_Backup_Restore_Job_Service {
 				'tim_backup_restore_safety_failed',
 				sprintf(
 					/* translators: %s: Backup error message. */
-					__( 'Restore cancelled because the database safety backup failed: %s', 'tim-backup' ),
+					__( 'Restore cancelled because the database safety backup failed: %s', 'tim-backup-free' ),
 					$safety->get_error_message()
 				)
 			);
@@ -525,7 +525,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( true !== $zip->open( $archive_path, ZipArchive::RDONLY ) ) {
 			return new WP_Error(
 				'tim_backup_restore_open_failed',
-				__( 'The verified backup archive could not be opened for restore.', 'tim-backup' )
+				__( 'The verified backup archive could not be opened for restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -539,7 +539,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_restore_database_chunk_invalid',
-				__( 'A database backup chunk is too large for a resumable restore.', 'tim-backup' )
+				__( 'A database backup chunk is too large for a resumable restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -549,7 +549,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_restore_data_missing',
-				__( 'Database table data is missing from the backup.', 'tim-backup' )
+				__( 'Database table data is missing from the backup.', 'tim-backup-free' )
 			);
 		}
 
@@ -580,7 +580,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_restore_workspace_failed',
-				__( 'The private restore workspace could not be created.', 'tim-backup' )
+				__( 'The private restore workspace could not be created.', 'tim-backup-free' )
 			);
 		}
 
@@ -591,7 +591,7 @@ final class TIM_Backup_Restore_Job_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_restore_extract_failed',
-				__( 'A verified database file could not be prepared for restore.', 'tim-backup' )
+				__( 'A verified database file could not be prepared for restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -607,7 +607,7 @@ final class TIM_Backup_Restore_Job_Service {
 				wp_delete_file( $partial );
 				return new WP_Error(
 					'tim_backup_restore_extract_failed',
-					__( 'A verified database file could not be prepared for restore.', 'tim-backup' )
+					__( 'A verified database file could not be prepared for restore.', 'tim-backup-free' )
 				);
 			}
 
@@ -621,7 +621,7 @@ final class TIM_Backup_Restore_Job_Service {
 				wp_delete_file( $partial );
 				return new WP_Error(
 					'tim_backup_restore_extract_failed',
-					__( 'A verified database file could not be prepared for restore.', 'tim-backup' )
+					__( 'A verified database file could not be prepared for restore.', 'tim-backup-free' )
 				);
 			}
 		}
@@ -634,7 +634,7 @@ final class TIM_Backup_Restore_Job_Service {
 			wp_delete_file( $partial );
 			return new WP_Error(
 				'tim_backup_hash_invalid',
-				__( 'A backup file failed its integrity check.', 'tim-backup' )
+				__( 'A backup file failed its integrity check.', 'tim-backup-free' )
 			);
 		}
 
@@ -642,7 +642,7 @@ final class TIM_Backup_Restore_Job_Service {
 			wp_delete_file( $partial );
 			return new WP_Error(
 				'tim_backup_restore_extract_failed',
-				__( 'A verified database file could not be prepared for restore.', 'tim-backup' )
+				__( 'A verified database file could not be prepared for restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -738,7 +738,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( '' === $entry ) {
 			return new WP_Error(
 				'tim_backup_restore_database_incomplete',
-				__( 'The verified database files do not match the database schema.', 'tim-backup' )
+				__( 'The verified database files do not match the database schema.', 'tim-backup-free' )
 			);
 		}
 
@@ -855,7 +855,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! is_array( $data ) || empty( $data ) ) {
 			return new WP_Error(
 				'tim_backup_restore_schema_invalid',
-				__( 'The database schema in the backup is invalid.', 'tim-backup' )
+				__( 'The database schema in the backup is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -899,7 +899,7 @@ final class TIM_Backup_Restore_Job_Service {
 				if ( isset( $chunks[ $chunk_index ] ) ) {
 					return new WP_Error(
 						'tim_backup_restore_database_incomplete',
-						__( 'The verified database files do not match the database schema.', 'tim-backup' )
+						__( 'The verified database files do not match the database schema.', 'tim-backup-free' )
 					);
 				}
 
@@ -912,7 +912,7 @@ final class TIM_Backup_Restore_Job_Service {
 			if ( empty( $chunks ) || array_keys( $chunks ) !== range( 0, count( $chunks ) - 1 ) ) {
 				return new WP_Error(
 					'tim_backup_restore_database_incomplete',
-					__( 'The verified database files do not match the database schema.', 'tim-backup' )
+					__( 'The verified database files do not match the database schema.', 'tim-backup-free' )
 				);
 			}
 
@@ -922,7 +922,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( count( $entries ) !== $matched_count + 1 ) {
 			return new WP_Error(
 				'tim_backup_restore_database_incomplete',
-				__( 'The verified database files do not match the database schema.', 'tim-backup' )
+				__( 'The verified database files do not match the database schema.', 'tim-backup-free' )
 			);
 		}
 
@@ -962,7 +962,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! is_dir( $workspace ) && ! wp_mkdir_p( $workspace ) ) {
 			return new WP_Error(
 				'tim_backup_restore_workspace_failed',
-				__( 'The private restore workspace could not be created.', 'tim-backup' )
+				__( 'The private restore workspace could not be created.', 'tim-backup-free' )
 			);
 		}
 
@@ -981,7 +981,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( 1 !== preg_match( '/\A[a-f0-9]{32}\z/', $job_id ) ) {
 			return new WP_Error(
 				'tim_backup_restore_job_invalid',
-				__( 'The saved database restore job is invalid.', 'tim-backup' )
+				__( 'The saved database restore job is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -1057,7 +1057,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! is_array( $job ) || empty( $job['signature'] ) ) {
 			return new WP_Error(
 				'tim_backup_restore_journal_invalid',
-				__( 'The saved database restore progress failed its integrity check.', 'tim-backup' )
+				__( 'The saved database restore progress failed its integrity check.', 'tim-backup-free' )
 			);
 		}
 
@@ -1074,7 +1074,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( ! hash_equals( $expected, $signature ) ) {
 			return new WP_Error(
 				'tim_backup_restore_journal_invalid',
-				__( 'The saved database restore progress failed its integrity check.', 'tim-backup' )
+				__( 'The saved database restore progress failed its integrity check.', 'tim-backup-free' )
 			);
 		}
 
@@ -1100,7 +1100,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( false === $json ) {
 			return new WP_Error(
 				'tim_backup_restore_journal_failed',
-				__( 'The database restore progress could not be saved.', 'tim-backup' )
+				__( 'The database restore progress could not be saved.', 'tim-backup-free' )
 			);
 		}
 
@@ -1111,7 +1111,7 @@ final class TIM_Backup_Restore_Job_Service {
 			wp_delete_file( $partial );
 			return new WP_Error(
 				'tim_backup_restore_journal_failed',
-				__( 'The database restore progress could not be saved.', 'tim-backup' )
+				__( 'The database restore progress could not be saved.', 'tim-backup-free' )
 			);
 		}
 
@@ -1131,14 +1131,14 @@ final class TIM_Backup_Restore_Job_Service {
 		$status       = (string) ( $job['status'] ?? 'error' );
 		$state        = isset( $job['restore_state'] ) && is_array( $job['restore_state'] ) ? $job['restore_state'] : array();
 		$phase_labels = array(
-			'verify'  => __( 'Verify backup archive', 'tim-backup' ),
-			'safety'  => __( 'Create current database safety backup', 'tim-backup' ),
-			'extract' => __( 'Prepare verified database files', 'tim-backup' ),
-			'prepare' => __( 'Create temporary database tables', 'tim-backup' ),
-			'import'  => __( 'Restore database data', 'tim-backup' ),
-			'swap'    => __( 'Activate restored database atomically', 'tim-backup' ),
-			'cleanup' => __( 'Clean up and refresh WordPress', 'tim-backup' ),
-			'complete' => __( 'Restore complete', 'tim-backup' ),
+			'verify'  => __( 'Verify backup archive', 'tim-backup-free' ),
+			'safety'  => __( 'Create current database safety backup', 'tim-backup-free' ),
+			'extract' => __( 'Prepare verified database files', 'tim-backup-free' ),
+			'prepare' => __( 'Create temporary database tables', 'tim-backup-free' ),
+			'import'  => __( 'Restore database data', 'tim-backup-free' ),
+			'swap'    => __( 'Activate restored database atomically', 'tim-backup-free' ),
+			'cleanup' => __( 'Clean up and refresh WordPress', 'tim-backup-free' ),
+			'complete' => __( 'Restore complete', 'tim-backup-free' ),
 		);
 		$steps = array();
 
@@ -1168,7 +1168,7 @@ final class TIM_Backup_Restore_Job_Service {
 			'steps'          => $steps,
 			'error'          => (string) ( $job['error'] ?? '' ),
 			'message'        => 'completed' === $status
-				? __( 'The database was restored successfully. The database safety backup was retained.', 'tim-backup' )
+				? __( 'The database was restored successfully. The database safety backup was retained.', 'tim-backup-free' )
 				: '',
 			'rowsImported'   => (int) ( $state['rows_imported'] ?? 0 ),
 			'tableCurrent'   => min( (int) ( $state['import_index'] ?? 0 ) + 1, count( (array) ( $state['tables'] ?? array() ) ) ),
@@ -1213,7 +1213,7 @@ final class TIM_Backup_Restore_Job_Service {
 			wp_delete_file( $partial );
 			return new WP_Error(
 				'tim_backup_restore_maintenance_failed',
-				__( 'TIM Backup could not enable protected restore maintenance mode.', 'tim-backup' )
+				__( 'TIM Backup could not enable protected restore maintenance mode.', 'tim-backup-free' )
 			);
 		}
 
@@ -1235,7 +1235,7 @@ final class TIM_Backup_Restore_Job_Service {
 		if ( is_file( $path ) ) {
 			return new WP_Error(
 				'tim_backup_restore_maintenance_cleanup_failed',
-				__( 'TIM Backup could not disable restore maintenance mode.', 'tim-backup' )
+				__( 'TIM Backup could not disable restore maintenance mode.', 'tim-backup-free' )
 			);
 		}
 
@@ -1277,7 +1277,7 @@ final class TIM_Backup_Restore_Job_Service {
 
 			return new WP_Error(
 				'tim_backup_restore_key_invalid',
-				__( 'The protected restore journal key is invalid.', 'tim-backup' )
+				__( 'The protected restore journal key is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -1292,7 +1292,7 @@ final class TIM_Backup_Restore_Job_Service {
 			wp_delete_file( $partial );
 			return new WP_Error(
 				'tim_backup_restore_key_failed',
-				__( 'The protected restore journal key could not be created.', 'tim-backup' )
+				__( 'The protected restore journal key could not be created.', 'tim-backup-free' )
 			);
 		}
 

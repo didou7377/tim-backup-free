@@ -32,8 +32,8 @@ jobs:
 
       - name: Validate translations
         run: |
-          msgfmt --check --check-format --output-file=/tmp/tim-backup-de_DE.mo languages/tim-backup-de_DE.po
-          msgcmp --use-fuzzy languages/tim-backup-de_DE.po languages/tim-backup.pot
+          msgfmt --check --check-format --output-file=/tmp/tim-backup-free-de_DE.mo languages/tim-backup-free-de_DE.po
+          msgcmp --use-fuzzy languages/tim-backup-free-de_DE.po languages/tim-backup-free.pot
 
   wordpress-smoke:
     runs-on: ubuntu-latest
@@ -82,12 +82,12 @@ jobs:
 
       - name: Install ephemeral WordPress
         run: |
-          mkdir --parents "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup"
+          mkdir --parents "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup-free"
           wp core download --path="$RUNNER_TEMP/wordpress" --version=7.1 --force
           wp config create --path="$RUNNER_TEMP/wordpress" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306
           wp core install --path="$RUNNER_TEMP/wordpress" --url=https://tim-backup.test --title="TIM Backup Test" --admin_user=admin --admin_password=test-password --admin_email=test@example.com --skip-email
-          rsync --archive --exclude=.git --exclude=node_modules --exclude=vendor ./ "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup/"
-          wp plugin activate tim-backup --path="$RUNNER_TEMP/wordpress"
+          rsync --archive --exclude=.git --exclude=node_modules --exclude=vendor ./ "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup-free/"
+          wp plugin activate tim-backup-free --path="$RUNNER_TEMP/wordpress"
 
       - name: Run destructive database restore test
-        run: wp eval-file "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup/tests/mysql-restore.php" --path="$RUNNER_TEMP/wordpress"
+        run: wp eval-file "$RUNNER_TEMP/wordpress/wp-content/plugins/tim-backup-free/tests/mysql-restore.php" --path="$RUNNER_TEMP/wordpress"

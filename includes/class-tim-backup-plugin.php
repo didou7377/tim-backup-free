@@ -114,7 +114,7 @@ final class TIM_Backup_Plugin {
 	 * @return void
 	 */
 	public function load_textdomain(): void {
-		load_plugin_textdomain( 'tim-backup', false, dirname( plugin_basename( TIM_BACKUP_FILE ) ) . '/languages' );
+		load_plugin_textdomain( 'tim-backup-free', false, dirname( plugin_basename( TIM_BACKUP_FILE ) ) . '/languages' );
 	}
 
 	/**
@@ -186,7 +186,7 @@ final class TIM_Backup_Plugin {
 		if (
 			is_admin()
 			&& 'GET' === $method
-			&& 'tim-backup' === $page
+			&& 'tim-backup-free' === $page
 			&& 'restore' === $view
 			&& current_user_can( 'manage_options' )
 		) {
@@ -209,7 +209,7 @@ final class TIM_Backup_Plugin {
 			deactivate_plugins( plugin_basename( TIM_BACKUP_FILE ) );
 			wp_die(
 				esc_html( $result->get_error_message() ),
-				esc_html__( 'TIM Backup activation failed', 'tim-backup' ),
+				esc_html__( 'TIM Backup activation failed', 'tim-backup-free' ),
 				array( 'back_link' => true )
 			);
 		}
@@ -247,7 +247,7 @@ final class TIM_Backup_Plugin {
 			$this->send_failure_email( $result );
 			$this->set_notice( 'error', $result->get_error_message() );
 		} else {
-			$this->set_notice( 'success', __( 'The backup was created and verified successfully.', 'tim-backup' ) );
+			$this->set_notice( 'success', __( 'The backup was created and verified successfully.', 'tim-backup-free' ) );
 		}
 
 		$this->redirect( 'backups' );
@@ -265,7 +265,7 @@ final class TIM_Backup_Plugin {
 		$confirmation = isset( $_POST['confirm_delete'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_delete'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 
 		if ( '' === $id || ! hash_equals( $id, $confirmation ) ) {
-			$this->set_notice( 'error', __( 'The deletion was not confirmed.', 'tim-backup' ) );
+			$this->set_notice( 'error', __( 'The deletion was not confirmed.', 'tim-backup-free' ) );
 			$this->redirect( 'backups' );
 		}
 
@@ -287,7 +287,7 @@ final class TIM_Backup_Plugin {
 		if ( is_wp_error( $result ) ) {
 			$this->set_notice( 'error', $result->get_error_message() );
 		} else {
-			$this->set_notice( 'success', __( 'The backup was deleted.', 'tim-backup' ) );
+			$this->set_notice( 'success', __( 'The backup was deleted.', 'tim-backup-free' ) );
 		}
 
 		$this->redirect( 'backups' );
@@ -304,7 +304,7 @@ final class TIM_Backup_Plugin {
 		$id  = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 		$url = add_query_arg(
 			array(
-				'page'      => 'tim-backup',
+				'page'      => 'tim-backup-free',
 				'view'      => 'restore',
 				'backup_id' => $id,
 			),
@@ -386,7 +386,7 @@ final class TIM_Backup_Plugin {
 				$this->storage->release_lock( 'operation', $lock );
 			}
 
-			$this->set_notice( 'error', __( 'The requested backup could not be downloaded.', 'tim-backup' ) );
+			$this->set_notice( 'error', __( 'The requested backup could not be downloaded.', 'tim-backup-free' ) );
 			$this->redirect( 'backups' );
 		}
 
@@ -454,8 +454,8 @@ final class TIM_Backup_Plugin {
 		nocache_headers();
 		header( 'Retry-After: 60' );
 		wp_die(
-			esc_html__( 'TIM Backup is restoring the database. Please try again shortly.', 'tim-backup' ),
-			esc_html__( 'Database restore in progress', 'tim-backup' ),
+			esc_html__( 'TIM Backup is restoring the database. Please try again shortly.', 'tim-backup-free' ),
+			esc_html__( 'Database restore in progress', 'tim-backup-free' ),
 			array( 'response' => 503 )
 		);
 	}
@@ -469,14 +469,14 @@ final class TIM_Backup_Plugin {
 		if ( is_multisite() ) {
 			return new WP_Error(
 				'tim_backup_multisite_unsupported',
-				__( 'TIM Backup Free 0.2.0 does not support WordPress Multisite.', 'tim-backup' )
+				__( 'TIM Backup Free 0.2.0 does not support WordPress Multisite.', 'tim-backup-free' )
 			);
 		}
 
 		if ( $this->restore_jobs->is_active() ) {
 			return new WP_Error(
 				'tim_backup_restore_job_active',
-				__( 'A database restore is in progress. Other backup changes are temporarily unavailable.', 'tim-backup' )
+				__( 'A database restore is in progress. Other backup changes are temporarily unavailable.', 'tim-backup-free' )
 			);
 		}
 
@@ -491,7 +491,7 @@ final class TIM_Backup_Plugin {
 	private function authorize_restore_ajax(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error(
-				array( 'message' => __( 'You are not allowed to restore backups.', 'tim-backup' ) ),
+				array( 'message' => __( 'You are not allowed to restore backups.', 'tim-backup-free' ) ),
 				403
 			);
 		}
@@ -525,8 +525,8 @@ final class TIM_Backup_Plugin {
 	private function authorize( string $action ): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die(
-				esc_html__( 'You are not allowed to manage backups.', 'tim-backup' ),
-				esc_html__( 'Access denied', 'tim-backup' ),
+				esc_html__( 'You are not allowed to manage backups.', 'tim-backup-free' ),
+				esc_html__( 'Access denied', 'tim-backup-free' ),
 				array( 'response' => 403 )
 			);
 		}
@@ -562,7 +562,7 @@ final class TIM_Backup_Plugin {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page' => 'tim-backup',
+					'page' => 'tim-backup-free',
 					'tab'  => sanitize_key( $tab ),
 				),
 				admin_url( 'admin.php' )
@@ -586,12 +586,12 @@ final class TIM_Backup_Plugin {
 
 		$subject = sprintf(
 			/* translators: %s: Site name. */
-			__( '[%s] TIM Backup failed', 'tim-backup' ),
+			__( '[%s] TIM Backup failed', 'tim-backup-free' ),
 			wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 		);
 		$message = sprintf(
 			/* translators: 1: Site URL, 2: Error message. */
-			__( "TIM Backup could not create a backup for %1\$s.\n\nReason: %2\$s\n\nPlease sign in to WordPress and review TIM Backup.", 'tim-backup' ),
+			__( "TIM Backup could not create a backup for %1\$s.\n\nReason: %2\$s\n\nPlease sign in to WordPress and review TIM Backup.", 'tim-backup-free' ),
 			home_url( '/' ),
 			$error->get_error_message()
 		);

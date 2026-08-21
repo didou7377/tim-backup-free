@@ -19,7 +19,7 @@ implementation.
 ## Development
 
 English is the source language. Every user-facing string must use WordPress
-internationalization functions with the `tim-backup` text domain. German
+internationalization functions with the `tim-backup-free` text domain. German
 translations are bundled under `languages/`.
 
 Install development dependencies:

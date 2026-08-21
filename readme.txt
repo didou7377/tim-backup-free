@@ -78,7 +78,7 @@ off-site copies of important backups.
 
 == Installation ==
 
-1. Upload the `tim-backup` directory to `/wp-content/plugins/`, or install the
+1. Upload the `tim-backup-free` directory to `/wp-content/plugins/`, or install the
    plugin through the WordPress Plugins screen.
 2. Activate TIM Backup.
 3. Open **TIM Backup** in the WordPress sidebar.

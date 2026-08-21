@@ -13,7 +13,7 @@ an external service.
 - Distribution: WordPress.org
 - Repository: `didou7377/tim-backup-free`
 - License: GPL-2.0-or-later
-- Text domain / WordPress.org slug: `tim-backup`
+- Text domain / WordPress.org slug / installation directory: `tim-backup-free`
 
 ## MVP scope
 
@@ -121,6 +121,17 @@ Before every release:
 4. Test backup, verification, download, retention and restore on a clean site.
 5. Test current WordPress, WooCommerce, HPOS and supported PHP versions.
 6. Tag the exact stable version.
+7. Build the installable ZIP with exactly one top-level directory named
+   `tim-backup-free`. Never publish `tim-backup-free-main`, `tim-backup`, or a
+   GitHub-generated source archive as the installable package.
+8. Inspect the final ZIP structure and test uploading it over the immediately
+   preceding release. WordPress must offer to replace the existing plugin and
+   must not create a second plugin directory.
+
+The installation directory is part of the plugin's update identity and must
+remain `tim-backup-free` for every release channel. It may only change through an
+explicitly tested migration; changing it only in a ZIP causes parallel
+installations, duplicate constants, and fatal bootstrap errors.
 
 ## Archive format v1
 
@@ -131,6 +142,10 @@ The ZIP contains:
 - `tim-backup/database/data/<table-hash>-<chunk>.jsonl` (independently hashed,
   maximum 4 MiB per encoded chunk)
 - `tim-backup/files/...` for full backups
+
+The internal `tim-backup/` archive namespace belongs to archive format v1 and is
+independent of the plugin's WordPress slug. It remains unchanged so existing
+backups stay compatible.
 
 The manifest records hashes for every payload entry and is signed. Archive-format
 changes require explicit backwards-compatibility handling.

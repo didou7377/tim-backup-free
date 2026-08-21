@@ -61,10 +61,10 @@ final class TIM_Backup_Admin {
 	 */
 	public function register_menu(): void {
 		$this->page_hook = add_menu_page(
-			__( 'TIM Backup', 'tim-backup' ),
-			__( 'TIM Backup', 'tim-backup' ),
+			__( 'TIM Backup', 'tim-backup-free' ),
+			__( 'TIM Backup', 'tim-backup-free' ),
 			'manage_options',
-			'tim-backup',
+			'tim-backup-free',
 			array( $this, 'render_page' ),
 			'dashicons-database-export',
 			81
@@ -110,10 +110,10 @@ final class TIM_Backup_Admin {
 					'cancel'  => 'tim_backup_restore_cancel',
 				),
 				'text'    => array(
-					'requestFailed' => __( 'The restore request failed. You can safely reopen this page to continue.', 'tim-backup' ),
-					'cancelConfirm' => __( 'Cancel this restore and remove all prepared temporary database tables?', 'tim-backup' ),
-					'working'       => __( 'Restore in progress. Do not close this page unless necessary.', 'tim-backup' ),
-					'rows'          => __( 'rows', 'tim-backup' ),
+					'requestFailed' => __( 'The restore request failed. You can safely reopen this page to continue.', 'tim-backup-free' ),
+					'cancelConfirm' => __( 'Cancel this restore and remove all prepared temporary database tables?', 'tim-backup-free' ),
+					'working'       => __( 'Restore in progress. Do not close this page unless necessary.', 'tim-backup-free' ),
+					'rows'          => __( 'rows', 'tim-backup-free' ),
 				),
 			)
 		);
@@ -130,9 +130,9 @@ final class TIM_Backup_Admin {
 		}
 
 		$tabs = array(
-			'overview' => __( 'Overview', 'tim-backup' ),
-			'backups'  => __( 'Backups', 'tim-backup' ),
-			'system'   => __( 'System', 'tim-backup' ),
+			'overview' => __( 'Overview', 'tim-backup-free' ),
+			'backups'  => __( 'Backups', 'tim-backup-free' ),
+			'system'   => __( 'System', 'tim-backup-free' ),
 		);
 		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
 		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view navigation.
@@ -145,15 +145,15 @@ final class TIM_Backup_Admin {
 		<div class="wrap tim-backup">
 			<header class="tim-backup__header">
 				<div>
-					<p class="tim-backup__eyebrow"><?php esc_html_e( 'TIM Plugin Series', 'tim-backup' ); ?></p>
-					<h1><?php esc_html_e( 'TIM Backup', 'tim-backup' ); ?></h1>
-					<p><?php esc_html_e( 'Secure local backups with verification before you need them.', 'tim-backup' ); ?></p>
+					<p class="tim-backup__eyebrow"><?php esc_html_e( 'TIM Plugin Series', 'tim-backup-free' ); ?></p>
+					<h1><?php esc_html_e( 'TIM Backup', 'tim-backup-free' ); ?></h1>
+					<p><?php esc_html_e( 'Secure local backups with verification before you need them.', 'tim-backup-free' ); ?></p>
 				</div>
 				<span class="tim-backup__version">
 					<?php
 					printf(
 						/* translators: %s: Plugin version. */
-						esc_html__( 'Version %s', 'tim-backup' ),
+						esc_html__( 'Version %s', 'tim-backup-free' ),
 						esc_html( TIM_BACKUP_VERSION )
 					);
 					?>
@@ -168,12 +168,12 @@ final class TIM_Backup_Admin {
 			endif;
 			?>
 
-			<nav class="nav-tab-wrapper tim-backup__tabs" aria-label="<?php esc_attr_e( 'TIM Backup sections', 'tim-backup' ); ?>">
+			<nav class="nav-tab-wrapper tim-backup__tabs" aria-label="<?php esc_attr_e( 'TIM Backup sections', 'tim-backup-free' ); ?>">
 				<?php foreach ( $tabs as $key => $label ) : ?>
 					<?php
 					$tab_url = add_query_arg(
 						array(
-							'page' => 'tim-backup',
+							'page' => 'tim-backup-free',
 							'tab'  => $key,
 						),
 						admin_url( 'admin.php' )
@@ -218,7 +218,7 @@ final class TIM_Backup_Admin {
 		$selected   = isset( $_GET['backup_id'] ) ? sanitize_text_field( wp_unslash( $_GET['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only preselection.
 		$backups_url = add_query_arg(
 			array(
-				'page' => 'tim-backup',
+				'page' => 'tim-backup-free',
 				'tab'  => 'backups',
 			),
 			admin_url( 'admin.php' )
@@ -228,34 +228,34 @@ final class TIM_Backup_Admin {
 			<div class="tim-restore-assistant__topbar">
 				<a href="<?php echo esc_url( $backups_url ); ?>" class="button">
 					<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
-					<?php esc_html_e( 'Back to backup management', 'tim-backup' ); ?>
+					<?php esc_html_e( 'Back to backup management', 'tim-backup-free' ); ?>
 				</a>
 			</div>
 
 			<section class="tim-card tim-card--wide tim-restore-assistant__intro">
-				<p class="tim-card__label"><?php esc_html_e( 'Guided restore', 'tim-backup' ); ?></p>
-				<h2><?php esc_html_e( 'Restore a database safely', 'tim-backup' ); ?></h2>
-				<p><?php esc_html_e( 'TIM Backup verifies the selected archive, creates a current database safety backup, prepares temporary tables, and activates them only after every row was imported successfully.', 'tim-backup' ); ?></p>
+				<p class="tim-card__label"><?php esc_html_e( 'Guided restore', 'tim-backup-free' ); ?></p>
+				<h2><?php esc_html_e( 'Restore a database safely', 'tim-backup-free' ); ?></h2>
+				<p><?php esc_html_e( 'TIM Backup verifies the selected archive, creates a current database safety backup, prepares temporary tables, and activates them only after every row was imported successfully.', 'tim-backup-free' ); ?></p>
 			</section>
 
 			<?php if ( empty( $backups ) ) : ?>
 				<section class="tim-card tim-card--wide">
-					<h2><?php esc_html_e( 'No backup is available', 'tim-backup' ); ?></h2>
-					<p><?php esc_html_e( 'Create a database or full backup before opening the restore assistant.', 'tim-backup' ); ?></p>
+					<h2><?php esc_html_e( 'No backup is available', 'tim-backup-free' ); ?></h2>
+					<p><?php esc_html_e( 'Create a database or full backup before opening the restore assistant.', 'tim-backup-free' ); ?></p>
 				</section>
 			<?php else : ?>
 				<div class="tim-restore-assistant__layout">
 					<section class="tim-card tim-restore-assistant__selection" data-tim-restore-selection>
-						<h2><?php esc_html_e( '1. Select backup', 'tim-backup' ); ?></h2>
-						<label for="tim-restore-backup"><strong><?php esc_html_e( 'Backup archive', 'tim-backup' ); ?></strong></label>
+						<h2><?php esc_html_e( '1. Select backup', 'tim-backup-free' ); ?></h2>
+						<label for="tim-restore-backup"><strong><?php esc_html_e( 'Backup archive', 'tim-backup-free' ); ?></strong></label>
 						<select id="tim-restore-backup" data-tim-restore-backup>
 							<?php foreach ( $backups as $backup ) : ?>
 								<?php
 								$id   = (string) $backup['id'];
-								$type = 'full' === (string) $backup['type'] ? __( 'Full backup', 'tim-backup' ) : __( 'Database backup', 'tim-backup' );
+								$type = 'full' === (string) $backup['type'] ? __( 'Full backup', 'tim-backup-free' ) : __( 'Database backup', 'tim-backup-free' );
 								$text = sprintf(
 									/* translators: 1: Backup type, 2: Date, 3: Size. */
-									__( '%1$s — %2$s — %3$s', 'tim-backup' ),
+									__( '%1$s — %2$s — %3$s', 'tim-backup-free' ),
 									$type,
 									wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $backup['created_at'] ),
 									size_format( (int) $backup['size'], 1 )
@@ -269,32 +269,32 @@ final class TIM_Backup_Admin {
 
 						<div class="tim-restore-assistant__warning">
 							<span class="dashicons dashicons-warning" aria-hidden="true"></span>
-							<p><strong><?php esc_html_e( 'Current database data will be replaced.', 'tim-backup' ); ?></strong><br><?php esc_html_e( 'Website files are not restored. A database safety backup is created first.', 'tim-backup' ); ?></p>
+							<p><strong><?php esc_html_e( 'Current database data will be replaced.', 'tim-backup-free' ); ?></strong><br><?php esc_html_e( 'Website files are not restored. A database safety backup is created first.', 'tim-backup-free' ); ?></p>
 						</div>
 
 						<label class="tim-restore-assistant__confirm">
 							<input type="checkbox" data-tim-restore-confirm>
-							<?php esc_html_e( 'I understand and want to start the guided database restore.', 'tim-backup' ); ?>
+							<?php esc_html_e( 'I understand and want to start the guided database restore.', 'tim-backup-free' ); ?>
 						</label>
 
 						<button type="button" class="button button-primary button-hero" data-tim-restore-start disabled>
-							<?php esc_html_e( 'Start database restore', 'tim-backup' ); ?>
+							<?php esc_html_e( 'Start database restore', 'tim-backup-free' ); ?>
 						</button>
 					</section>
 
 					<section class="tim-card tim-restore-assistant__progress" data-tim-restore-progress aria-live="polite">
-						<h2><?php esc_html_e( '2. Restore progress', 'tim-backup' ); ?></h2>
+						<h2><?php esc_html_e( '2. Restore progress', 'tim-backup-free' ); ?></h2>
 						<ol class="tim-restore-steps" data-tim-restore-steps>
 							<?php
 							$steps = array(
-								__( 'Verify backup archive', 'tim-backup' ),
-								__( 'Create current database safety backup', 'tim-backup' ),
-								__( 'Prepare verified database files', 'tim-backup' ),
-								__( 'Create temporary database tables', 'tim-backup' ),
-								__( 'Restore database data', 'tim-backup' ),
-								__( 'Activate restored database atomically', 'tim-backup' ),
-								__( 'Clean up and refresh WordPress', 'tim-backup' ),
-								__( 'Restore complete', 'tim-backup' ),
+								__( 'Verify backup archive', 'tim-backup-free' ),
+								__( 'Create current database safety backup', 'tim-backup-free' ),
+								__( 'Prepare verified database files', 'tim-backup-free' ),
+								__( 'Create temporary database tables', 'tim-backup-free' ),
+								__( 'Restore database data', 'tim-backup-free' ),
+								__( 'Activate restored database atomically', 'tim-backup-free' ),
+								__( 'Clean up and refresh WordPress', 'tim-backup-free' ),
+								__( 'Restore complete', 'tim-backup-free' ),
 							);
 
 							foreach ( $steps as $step ) :
@@ -305,13 +305,13 @@ final class TIM_Backup_Admin {
 								</li>
 							<?php endforeach; ?>
 						</ol>
-						<p class="tim-restore-assistant__detail" data-tim-restore-detail><?php esc_html_e( 'Select a backup to begin.', 'tim-backup' ); ?></p>
+						<p class="tim-restore-assistant__detail" data-tim-restore-detail><?php esc_html_e( 'Select a backup to begin.', 'tim-backup-free' ); ?></p>
 						<div class="tim-restore-assistant__error" data-tim-restore-error hidden></div>
 						<button type="button" class="button button-primary" data-tim-restore-retry hidden>
-							<?php esc_html_e( 'Retry final cleanup', 'tim-backup' ); ?>
+							<?php esc_html_e( 'Retry final cleanup', 'tim-backup-free' ); ?>
 						</button>
 						<button type="button" class="button button-link-delete" data-tim-restore-cancel hidden>
-							<?php esc_html_e( 'Cancel restore', 'tim-backup' ); ?>
+							<?php esc_html_e( 'Cancel restore', 'tim-backup-free' ); ?>
 						</button>
 					</section>
 				</div>
@@ -331,7 +331,7 @@ final class TIM_Backup_Admin {
 		$next       = wp_next_scheduled( 'tim_backup_weekly_event' );
 		$backups_url = add_query_arg(
 			array(
-				'page' => 'tim-backup',
+				'page' => 'tim-backup-free',
 				'tab'  => 'backups',
 			),
 			admin_url( 'admin.php' )
@@ -339,69 +339,69 @@ final class TIM_Backup_Admin {
 		?>
 		<div class="tim-backup__grid">
 			<section class="tim-card tim-card--accent">
-				<p class="tim-card__label"><?php esc_html_e( 'Backup status', 'tim-backup' ); ?></p>
+				<p class="tim-card__label"><?php esc_html_e( 'Backup status', 'tim-backup-free' ); ?></p>
 				<?php if ( is_array( $latest ) ) : ?>
-					<h2><?php esc_html_e( 'Protected locally', 'tim-backup' ); ?></h2>
+					<h2><?php esc_html_e( 'Protected locally', 'tim-backup-free' ); ?></h2>
 					<p>
 						<?php
 						printf(
 							/* translators: %s: Human-readable backup date. */
-							esc_html__( 'Latest verified backup: %s', 'tim-backup' ),
+							esc_html__( 'Latest verified backup: %s', 'tim-backup-free' ),
 							esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $latest['created_at'] ) )
 						);
 						?>
 					</p>
 				<?php else : ?>
-					<h2><?php esc_html_e( 'Create your first backup', 'tim-backup' ); ?></h2>
-					<p><?php esc_html_e( 'No managed backup is available yet.', 'tim-backup' ); ?></p>
+					<h2><?php esc_html_e( 'Create your first backup', 'tim-backup-free' ); ?></h2>
+					<p><?php esc_html_e( 'No managed backup is available yet.', 'tim-backup-free' ); ?></p>
 				<?php endif; ?>
 				<a class="button button-primary button-hero" href="<?php echo esc_url( $backups_url ); ?>">
-					<?php esc_html_e( 'Manage backups', 'tim-backup' ); ?>
+					<?php esc_html_e( 'Manage backups', 'tim-backup-free' ); ?>
 				</a>
 			</section>
 
 			<section class="tim-card">
-				<p class="tim-card__label"><?php esc_html_e( 'Weekly automation', 'tim-backup' ); ?></p>
-				<h2><?php esc_html_e( 'Full site backup', 'tim-backup' ); ?></h2>
+				<p class="tim-card__label"><?php esc_html_e( 'Weekly automation', 'tim-backup-free' ); ?></p>
+				<h2><?php esc_html_e( 'Full site backup', 'tim-backup-free' ); ?></h2>
 				<p>
 					<?php
 					if ( $next ) {
 						printf(
 							/* translators: %s: Date of next scheduled backup. */
-							esc_html__( 'Next run: %s', 'tim-backup' ),
+							esc_html__( 'Next run: %s', 'tim-backup-free' ),
 							esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next ) )
 						);
 					} else {
-						esc_html_e( 'The weekly event is not currently scheduled.', 'tim-backup' );
+						esc_html_e( 'The weekly event is not currently scheduled.', 'tim-backup-free' );
 					}
 					?>
 				</p>
-				<p class="description"><?php esc_html_e( 'WordPress Cron runs when the site receives traffic.', 'tim-backup' ); ?></p>
+				<p class="description"><?php esc_html_e( 'WordPress Cron runs when the site receives traffic.', 'tim-backup-free' ); ?></p>
 			</section>
 
 			<section class="tim-card">
-				<p class="tim-card__label"><?php esc_html_e( 'Local retention', 'tim-backup' ); ?></p>
+				<p class="tim-card__label"><?php esc_html_e( 'Local retention', 'tim-backup-free' ); ?></p>
 				<h2>
 					<?php
 					printf(
 						/* translators: 1: Current backup count, 2: Maximum backup count. */
-						esc_html__( '%1$d of %2$d backups', 'tim-backup' ),
+						esc_html__( '%1$d of %2$d backups', 'tim-backup-free' ),
 						count( $backups ),
 						3
 					);
 					?>
 				</h2>
-				<p><?php esc_html_e( 'After a successful fourth backup, the oldest managed archive is removed.', 'tim-backup' ); ?></p>
+				<p><?php esc_html_e( 'After a successful fourth backup, the oldest managed archive is removed.', 'tim-backup-free' ); ?></p>
 			</section>
 		</div>
 
 		<section class="tim-card tim-card--wide">
-			<h2><?php esc_html_e( 'Security by default', 'tim-backup' ); ?></h2>
+			<h2><?php esc_html_e( 'Security by default', 'tim-backup-free' ); ?></h2>
 			<ul class="tim-check-list">
-				<li><?php esc_html_e( 'Archives use random names and protected local storage.', 'tim-backup' ); ?></li>
-				<li><?php esc_html_e( 'Every payload file is checked with SHA-256.', 'tim-backup' ); ?></li>
-				<li><?php esc_html_e( 'A site-bound signature is verified before restore.', 'tim-backup' ); ?></li>
-				<li><?php esc_html_e( 'Downloads and changes require administrator permission and request verification.', 'tim-backup' ); ?></li>
+				<li><?php esc_html_e( 'Archives use random names and protected local storage.', 'tim-backup-free' ); ?></li>
+				<li><?php esc_html_e( 'Every payload file is checked with SHA-256.', 'tim-backup-free' ); ?></li>
+				<li><?php esc_html_e( 'A site-bound signature is verified before restore.', 'tim-backup-free' ); ?></li>
+				<li><?php esc_html_e( 'Downloads and changes require administrator permission and request verification.', 'tim-backup-free' ); ?></li>
 			</ul>
 		</section>
 		<?php
@@ -423,17 +423,17 @@ final class TIM_Backup_Admin {
 		<section class="tim-card tim-card--wide">
 			<div class="tim-card__heading">
 				<div>
-					<p class="tim-card__label"><?php esc_html_e( 'Protected archives', 'tim-backup' ); ?></p>
-					<h2><?php esc_html_e( 'Local backups', 'tim-backup' ); ?></h2>
+					<p class="tim-card__label"><?php esc_html_e( 'Protected archives', 'tim-backup-free' ); ?></p>
+					<h2><?php esc_html_e( 'Local backups', 'tim-backup-free' ); ?></h2>
 				</div>
-				<span><?php esc_html_e( 'Maximum: 3', 'tim-backup' ); ?></span>
+				<span><?php esc_html_e( 'Maximum: 3', 'tim-backup-free' ); ?></span>
 			</div>
 
 			<?php if ( empty( $backups ) ) : ?>
 				<div class="tim-empty-state">
 					<span class="dashicons dashicons-database-add" aria-hidden="true"></span>
-					<h3><?php esc_html_e( 'No backups yet', 'tim-backup' ); ?></h3>
-					<p><?php esc_html_e( 'Create a full or database backup above.', 'tim-backup' ); ?></p>
+					<h3><?php esc_html_e( 'No backups yet', 'tim-backup-free' ); ?></h3>
+					<p><?php esc_html_e( 'Create a full or database backup above.', 'tim-backup-free' ); ?></p>
 				</div>
 			<?php else : ?>
 				<div class="tim-backup-list">
@@ -457,13 +457,13 @@ final class TIM_Backup_Admin {
 		?>
 		<section class="tim-card">
 			<span class="<?php echo esc_attr( 'dashicons ' . ( $is_full ? 'dashicons-admin-site-alt3' : 'dashicons-database' ) ); ?>" aria-hidden="true"></span>
-			<h2><?php echo esc_html( $is_full ? __( 'Full backup', 'tim-backup' ) : __( 'Database backup', 'tim-backup' ) ); ?></h2>
+			<h2><?php echo esc_html( $is_full ? __( 'Full backup', 'tim-backup-free' ) : __( 'Database backup', 'tim-backup-free' ) ); ?></h2>
 			<p>
 				<?php
 				echo esc_html(
 					$is_full
-						? __( 'Back up the database and regular files below the WordPress root.', 'tim-backup' )
-						: __( 'Back up all current-site database tables, including WooCommerce HPOS tables.', 'tim-backup' )
+						? __( 'Back up the database and regular files below the WordPress root.', 'tim-backup-free' )
+						: __( 'Back up all current-site database tables, including WooCommerce HPOS tables.', 'tim-backup-free' )
 				);
 				?>
 			</p>
@@ -472,7 +472,7 @@ final class TIM_Backup_Admin {
 				<input type="hidden" name="backup_type" value="<?php echo esc_attr( $type ); ?>">
 				<?php wp_nonce_field( 'tim_backup_create' ); ?>
 				<button type="submit" class="button button-primary">
-					<?php esc_html_e( 'Create and verify', 'tim-backup' ); ?>
+					<?php esc_html_e( 'Create and verify', 'tim-backup-free' ); ?>
 				</button>
 			</form>
 		</section>
@@ -488,10 +488,10 @@ final class TIM_Backup_Admin {
 	private function render_backup_item( array $backup ): void {
 		$id      = (string) $backup['id'];
 		$is_full = 'full' === (string) $backup['type'];
-		$type    = $is_full ? __( 'Full backup', 'tim-backup' ) : __( 'Database backup', 'tim-backup' );
+		$type    = $is_full ? __( 'Full backup', 'tim-backup-free' ) : __( 'Database backup', 'tim-backup-free' );
 		$restore_url = add_query_arg(
 			array(
-				'page'      => 'tim-backup',
+				'page'      => 'tim-backup-free',
 				'view'      => 'restore',
 				'backup_id' => $id,
 			),
@@ -511,7 +511,7 @@ final class TIM_Backup_Admin {
 						echo ' · ';
 						printf(
 							/* translators: %s: Backup duration in seconds. */
-							esc_html__( '%s seconds', 'tim-backup' ),
+							esc_html__( '%s seconds', 'tim-backup-free' ),
 							esc_html( (string) $backup['duration'] )
 						);
 						?>
@@ -521,8 +521,8 @@ final class TIM_Backup_Admin {
 					<?php
 					echo esc_html(
 						! empty( $backup['verified'] )
-							? __( 'Verified at creation', 'tim-backup' )
-							: __( 'Archive changed', 'tim-backup' )
+							? __( 'Verified at creation', 'tim-backup-free' )
+							: __( 'Archive changed', 'tim-backup-free' )
 					);
 					?>
 				</span>
@@ -533,25 +533,25 @@ final class TIM_Backup_Admin {
 					<input type="hidden" name="action" value="tim_backup_download">
 					<input type="hidden" name="backup_id" value="<?php echo esc_attr( $id ); ?>">
 					<?php wp_nonce_field( 'tim_backup_download' ); ?>
-					<button type="submit" class="button"><?php esc_html_e( 'Download', 'tim-backup' ); ?></button>
+					<button type="submit" class="button"><?php esc_html_e( 'Download', 'tim-backup-free' ); ?></button>
 				</form>
 
 				<a class="button" href="<?php echo esc_url( $restore_url ); ?>">
-					<?php echo esc_html( $is_full ? __( 'Restore database only', 'tim-backup' ) : __( 'Restore database', 'tim-backup' ) ); ?>
+					<?php echo esc_html( $is_full ? __( 'Restore database only', 'tim-backup-free' ) : __( 'Restore database', 'tim-backup-free' ) ); ?>
 				</a>
 
 				<details class="tim-restore tim-delete">
-					<summary class="button button-link-delete"><?php esc_html_e( 'Delete', 'tim-backup' ); ?></summary>
+					<summary class="button button-link-delete"><?php esc_html_e( 'Delete', 'tim-backup-free' ); ?></summary>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="tim_backup_delete">
 						<input type="hidden" name="backup_id" value="<?php echo esc_attr( $id ); ?>">
 						<?php wp_nonce_field( 'tim_backup_delete' ); ?>
-						<p><strong><?php esc_html_e( 'Permanently delete this backup?', 'tim-backup' ); ?></strong></p>
+						<p><strong><?php esc_html_e( 'Permanently delete this backup?', 'tim-backup-free' ); ?></strong></p>
 						<label>
 							<input type="checkbox" name="confirm_delete" value="<?php echo esc_attr( $id ); ?>" required>
-							<?php esc_html_e( 'I understand that this archive cannot be recovered.', 'tim-backup' ); ?>
+							<?php esc_html_e( 'I understand that this archive cannot be recovered.', 'tim-backup-free' ); ?>
 						</label>
-						<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Delete permanently', 'tim-backup' ); ?></button>
+						<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Delete permanently', 'tim-backup-free' ); ?></button>
 					</form>
 				</details>
 			</div>
@@ -567,32 +567,32 @@ final class TIM_Backup_Admin {
 	private function render_system(): void {
 		$storage_ready = $this->storage->ensure_directory();
 		$checks        = array(
-			__( 'PHP 8.1 or newer', 'tim-backup' )       => version_compare( PHP_VERSION, '8.1', '>=' ),
-			__( 'PHP ZIP extension', 'tim-backup' )      => class_exists( 'ZipArchive' ),
-			__( 'Writable backup storage', 'tim-backup' ) => ! is_wp_error( $storage_ready ) && is_writable( $this->storage->directory() ),
-			__( 'Single-site WordPress', 'tim-backup' )  => ! is_multisite(),
+			__( 'PHP 8.1 or newer', 'tim-backup-free' )       => version_compare( PHP_VERSION, '8.1', '>=' ),
+			__( 'PHP ZIP extension', 'tim-backup-free' )      => class_exists( 'ZipArchive' ),
+			__( 'Writable backup storage', 'tim-backup-free' ) => ! is_wp_error( $storage_ready ) && is_writable( $this->storage->directory() ),
+			__( 'Single-site WordPress', 'tim-backup-free' )  => ! is_multisite(),
 		);
 		?>
 		<div class="tim-backup__grid tim-backup__grid--two">
 			<section class="tim-card">
-				<p class="tim-card__label"><?php esc_html_e( 'Environment', 'tim-backup' ); ?></p>
-				<h2><?php esc_html_e( 'System checks', 'tim-backup' ); ?></h2>
+				<p class="tim-card__label"><?php esc_html_e( 'Environment', 'tim-backup-free' ); ?></p>
+				<h2><?php esc_html_e( 'System checks', 'tim-backup-free' ); ?></h2>
 				<ul class="tim-system-list">
 					<?php foreach ( $checks as $label => $passed ) : ?>
 						<li>
 							<span class="<?php echo esc_attr( 'dashicons ' . ( $passed ? 'dashicons-yes-alt' : 'dashicons-warning' ) ); ?>" aria-hidden="true"></span>
 							<span><?php echo esc_html( $label ); ?></span>
-							<strong><?php echo esc_html( $passed ? __( 'Ready', 'tim-backup' ) : __( 'Action needed', 'tim-backup' ) ); ?></strong>
+							<strong><?php echo esc_html( $passed ? __( 'Ready', 'tim-backup-free' ) : __( 'Action needed', 'tim-backup-free' ) ); ?></strong>
 						</li>
 					<?php endforeach; ?>
 				</ul>
 			</section>
 
 			<section class="tim-card">
-				<p class="tim-card__label"><?php esc_html_e( 'Privacy', 'tim-backup' ); ?></p>
-				<h2><?php esc_html_e( 'Local by design', 'tim-backup' ); ?></h2>
-				<p><?php esc_html_e( 'TIM Backup Free does not create an account, track usage, or contact an external service.', 'tim-backup' ); ?></p>
-				<p><?php esc_html_e( 'Backup archives remain on this WordPress server until an administrator downloads or deletes them.', 'tim-backup' ); ?></p>
+				<p class="tim-card__label"><?php esc_html_e( 'Privacy', 'tim-backup-free' ); ?></p>
+				<h2><?php esc_html_e( 'Local by design', 'tim-backup-free' ); ?></h2>
+				<p><?php esc_html_e( 'TIM Backup Free does not create an account, track usage, or contact an external service.', 'tim-backup-free' ); ?></p>
+				<p><?php esc_html_e( 'Backup archives remain on this WordPress server until an administrator downloads or deletes them.', 'tim-backup-free' ); ?></p>
 			</section>
 		</div>
 		<?php

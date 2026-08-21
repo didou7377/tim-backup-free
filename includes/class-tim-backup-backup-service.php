@@ -55,14 +55,14 @@ final class TIM_Backup_Backup_Service {
 		if ( ! in_array( $type, array( 'full', 'database' ), true ) ) {
 			return new WP_Error(
 				'tim_backup_invalid_type',
-				__( 'The requested backup type is invalid.', 'tim-backup' )
+				__( 'The requested backup type is invalid.', 'tim-backup-free' )
 			);
 		}
 
 		if ( ! class_exists( 'ZipArchive' ) ) {
 			return new WP_Error(
 				'tim_backup_zip_unavailable',
-				__( 'The PHP ZIP extension is required to create backups.', 'tim-backup' )
+				__( 'The PHP ZIP extension is required to create backups.', 'tim-backup-free' )
 			);
 		}
 
@@ -107,7 +107,7 @@ final class TIM_Backup_Backup_Service {
 				$this->storage->release_lock( 'operation', $lock );
 				return new WP_Error(
 					'tim_backup_archive_hash_failed',
-					__( 'The completed backup archive could not be hashed.', 'tim-backup' )
+					__( 'The completed backup archive could not be hashed.', 'tim-backup-free' )
 				);
 			}
 
@@ -141,7 +141,7 @@ final class TIM_Backup_Backup_Service {
 		if ( ! is_wp_error( $result ) && ! rename( $partial_path, $archive_path ) ) {
 			$result = new WP_Error(
 				'tim_backup_archive_finalize_failed',
-				__( 'The completed backup archive could not be finalized.', 'tim-backup' )
+				__( 'The completed backup archive could not be finalized.', 'tim-backup-free' )
 			);
 		}
 
@@ -163,7 +163,7 @@ final class TIM_Backup_Backup_Service {
 			$this->storage->release_lock( 'operation', $lock );
 			return new WP_Error(
 				'tim_backup_archive_hash_failed',
-				__( 'The completed backup archive could not be hashed.', 'tim-backup' )
+				__( 'The completed backup archive could not be hashed.', 'tim-backup-free' )
 			);
 		}
 
@@ -202,7 +202,7 @@ final class TIM_Backup_Backup_Service {
 		if ( ! is_file( $archive_path ) ) {
 			return new WP_Error(
 				'tim_backup_archive_missing',
-				__( 'The backup archive does not exist.', 'tim-backup' )
+				__( 'The backup archive does not exist.', 'tim-backup-free' )
 			);
 		}
 
@@ -211,7 +211,7 @@ final class TIM_Backup_Backup_Service {
 		if ( true !== $zip->open( $archive_path, ZipArchive::RDONLY ) ) {
 			return new WP_Error(
 				'tim_backup_archive_unreadable',
-				__( 'The backup archive is not a readable ZIP file.', 'tim-backup' )
+				__( 'The backup archive is not a readable ZIP file.', 'tim-backup-free' )
 			);
 		}
 
@@ -221,7 +221,7 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_manifest_missing',
-				__( 'The backup manifest is missing.', 'tim-backup' )
+				__( 'The backup manifest is missing.', 'tim-backup-free' )
 			);
 		}
 
@@ -236,7 +236,7 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_manifest_invalid',
-				__( 'The backup manifest is invalid or unsupported.', 'tim-backup' )
+				__( 'The backup manifest is invalid or unsupported.', 'tim-backup-free' )
 			);
 		}
 
@@ -248,7 +248,7 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_signature_invalid',
-				__( 'The backup signature is invalid. The archive may have been changed.', 'tim-backup' )
+				__( 'The backup signature is invalid. The archive may have been changed.', 'tim-backup-free' )
 			);
 		}
 
@@ -256,7 +256,7 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_wrong_site',
-				__( 'This backup belongs to a different WordPress site.', 'tim-backup' )
+				__( 'This backup belongs to a different WordPress site.', 'tim-backup-free' )
 			);
 		}
 
@@ -284,7 +284,7 @@ final class TIM_Backup_Backup_Service {
 				$zip->close();
 				return new WP_Error(
 					'tim_backup_archive_contents_invalid',
-					__( 'The backup contains an unexpected, duplicate, or unsafe archive entry.', 'tim-backup' )
+					__( 'The backup contains an unexpected, duplicate, or unsafe archive entry.', 'tim-backup-free' )
 				);
 			}
 
@@ -295,7 +295,7 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_archive_contents_incomplete',
-				__( 'The backup archive contents do not match its signed manifest.', 'tim-backup' )
+				__( 'The backup archive contents do not match its signed manifest.', 'tim-backup-free' )
 			);
 		}
 
@@ -304,7 +304,7 @@ final class TIM_Backup_Backup_Service {
 				$zip->close();
 				return new WP_Error(
 					'tim_backup_entry_invalid',
-					__( 'The backup contains an unsafe archive path.', 'tim-backup' )
+					__( 'The backup contains an unsafe archive path.', 'tim-backup-free' )
 				);
 			}
 
@@ -314,7 +314,7 @@ final class TIM_Backup_Backup_Service {
 				$zip->close();
 				return new WP_Error(
 					'tim_backup_entry_missing',
-					__( 'A file recorded by the backup manifest is missing.', 'tim-backup' )
+					__( 'A file recorded by the backup manifest is missing.', 'tim-backup-free' )
 				);
 			}
 
@@ -326,7 +326,7 @@ final class TIM_Backup_Backup_Service {
 				$zip->close();
 				return new WP_Error(
 					'tim_backup_hash_invalid',
-					__( 'A backup file failed its integrity check.', 'tim-backup' )
+					__( 'A backup file failed its integrity check.', 'tim-backup-free' )
 				);
 			}
 		}
@@ -350,7 +350,7 @@ final class TIM_Backup_Backup_Service {
 		if ( ! wp_mkdir_p( $temp_path ) ) {
 			return new WP_Error(
 				'tim_backup_temp_create_failed',
-				__( 'TIM Backup could not create a temporary working directory.', 'tim-backup' )
+				__( 'TIM Backup could not create a temporary working directory.', 'tim-backup-free' )
 			);
 		}
 
@@ -359,7 +359,7 @@ final class TIM_Backup_Backup_Service {
 		if ( true !== $zip->open( $archive_path, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
 			return new WP_Error(
 				'tim_backup_archive_create_failed',
-				__( 'TIM Backup could not create the backup archive.', 'tim-backup' )
+				__( 'TIM Backup could not create the backup archive.', 'tim-backup-free' )
 			);
 		}
 
@@ -397,14 +397,14 @@ final class TIM_Backup_Backup_Service {
 			$zip->close();
 			return new WP_Error(
 				'tim_backup_manifest_write_failed',
-				__( 'TIM Backup could not write the archive manifest.', 'tim-backup' )
+				__( 'TIM Backup could not write the archive manifest.', 'tim-backup-free' )
 			);
 		}
 
 		if ( ! $zip->close() ) {
 			return new WP_Error(
 				'tim_backup_archive_close_failed',
-				__( 'TIM Backup could not finish writing the backup archive.', 'tim-backup' )
+				__( 'TIM Backup could not finish writing the backup archive.', 'tim-backup-free' )
 			);
 		}
 
@@ -430,7 +430,7 @@ final class TIM_Backup_Backup_Service {
 		) {
 			return new WP_Error(
 				'tim_backup_database_isolation_failed',
-				__( 'The database could not start a repeatable-read backup transaction.', 'tim-backup' )
+				__( 'The database could not start a repeatable-read backup transaction.', 'tim-backup-free' )
 			);
 		}
 
@@ -440,7 +440,7 @@ final class TIM_Backup_Backup_Service {
 		if ( ! $transaction_started ) {
 			return new WP_Error(
 				'tim_backup_database_transaction_failed',
-				__( 'The database could not start a consistent backup transaction.', 'tim-backup' )
+				__( 'The database could not start a consistent backup transaction.', 'tim-backup-free' )
 			);
 		}
 
@@ -459,7 +459,7 @@ final class TIM_Backup_Backup_Service {
 			return $fail(
 				new WP_Error(
 					'tim_backup_database_tables_missing',
-					__( 'No WordPress database tables were found.', 'tim-backup' )
+					__( 'No WordPress database tables were found.', 'tim-backup-free' )
 				)
 			);
 		}
@@ -473,7 +473,7 @@ final class TIM_Backup_Backup_Service {
 				return $fail(
 					new WP_Error(
 						'tim_backup_table_name_invalid',
-						__( 'A database table has an unsafe name and cannot be backed up.', 'tim-backup' )
+						__( 'A database table has an unsafe name and cannot be backed up.', 'tim-backup-free' )
 					)
 				);
 			}
@@ -484,7 +484,7 @@ final class TIM_Backup_Backup_Service {
 				return $fail(
 					new WP_Error(
 						'tim_backup_schema_export_failed',
-						__( 'A database table schema could not be exported.', 'tim-backup' )
+						__( 'A database table schema could not be exported.', 'tim-backup-free' )
 					)
 				);
 			}
@@ -493,7 +493,7 @@ final class TIM_Backup_Backup_Service {
 				return $fail(
 					new WP_Error(
 						'tim_backup_database_object_unsupported',
-						__( 'A prefixed database object is not a base table and cannot be backed up by this version.', 'tim-backup' )
+						__( 'A prefixed database object is not a base table and cannot be backed up by this version.', 'tim-backup-free' )
 					)
 				);
 			}
@@ -508,7 +508,7 @@ final class TIM_Backup_Backup_Service {
 					return $fail(
 						new WP_Error(
 							'tim_backup_database_engine_unsupported',
-							__( 'All backed-up tables must use InnoDB for a consistent snapshot.', 'tim-backup' )
+							__( 'All backed-up tables must use InnoDB for a consistent snapshot.', 'tim-backup-free' )
 						)
 					);
 				}
@@ -522,7 +522,7 @@ final class TIM_Backup_Backup_Service {
 					return $fail(
 						new WP_Error(
 							'tim_backup_database_primary_key_missing',
-							__( 'Every backed-up table must have a primary key for deterministic export.', 'tim-backup' )
+							__( 'Every backed-up table must have a primary key for deterministic export.', 'tim-backup-free' )
 						)
 					);
 				}
@@ -543,7 +543,7 @@ final class TIM_Backup_Backup_Service {
 						return $fail(
 							new WP_Error(
 								'tim_backup_database_primary_key_invalid',
-								__( 'A primary-key column has an unsafe name.', 'tim-backup' )
+								__( 'A primary-key column has an unsafe name.', 'tim-backup-free' )
 							)
 						);
 					}
@@ -567,7 +567,7 @@ final class TIM_Backup_Backup_Service {
 				return $fail(
 					new WP_Error(
 						'tim_backup_database_file_failed',
-						__( 'A temporary database export file could not be created.', 'tim-backup' )
+						__( 'A temporary database export file could not be created.', 'tim-backup-free' )
 					)
 				);
 			}
@@ -587,7 +587,7 @@ final class TIM_Backup_Backup_Service {
 					return $fail(
 						new WP_Error(
 							'tim_backup_database_export_failed',
-							__( 'Database rows could not be exported.', 'tim-backup' )
+							__( 'Database rows could not be exported.', 'tim-backup-free' )
 						)
 					);
 				}
@@ -606,7 +606,7 @@ final class TIM_Backup_Backup_Service {
 						return $fail(
 							new WP_Error(
 								'tim_backup_database_row_too_large',
-								__( 'A database row is too large for the resumable backup format.', 'tim-backup' )
+								__( 'A database row is too large for the resumable backup format.', 'tim-backup-free' )
 							)
 						);
 					}
@@ -628,7 +628,7 @@ final class TIM_Backup_Backup_Service {
 							return $fail(
 								new WP_Error(
 									'tim_backup_database_file_failed',
-									__( 'A temporary database export file could not be created.', 'tim-backup' )
+									__( 'A temporary database export file could not be created.', 'tim-backup-free' )
 								)
 							);
 						}
@@ -641,7 +641,7 @@ final class TIM_Backup_Backup_Service {
 						return $fail(
 							new WP_Error(
 								'tim_backup_database_export_write_failed',
-								__( 'Database export data could not be written.', 'tim-backup' )
+								__( 'Database export data could not be written.', 'tim-backup-free' )
 							)
 						);
 					}
@@ -668,7 +668,7 @@ final class TIM_Backup_Backup_Service {
 			return $fail(
 				new WP_Error(
 					'tim_backup_database_schema_too_large',
-					__( 'The database schema is too large for the resumable backup format.', 'tim-backup' )
+					__( 'The database schema is too large for the resumable backup format.', 'tim-backup-free' )
 				)
 			);
 		}
@@ -677,7 +677,7 @@ final class TIM_Backup_Backup_Service {
 			return $fail(
 				new WP_Error(
 					'tim_backup_schema_archive_failed',
-					__( 'The database schema could not be added to the archive.', 'tim-backup' )
+					__( 'The database schema could not be added to the archive.', 'tim-backup-free' )
 				)
 			);
 		}
@@ -688,7 +688,7 @@ final class TIM_Backup_Backup_Service {
 			return $fail(
 				new WP_Error(
 					'tim_backup_database_commit_failed',
-					__( 'The consistent database snapshot could not be completed.', 'tim-backup' )
+					__( 'The consistent database snapshot could not be completed.', 'tim-backup-free' )
 				)
 			);
 		}
@@ -718,7 +718,7 @@ final class TIM_Backup_Backup_Service {
 		if ( ! $zip->addFile( $temp_file, $entry ) ) {
 			return new WP_Error(
 				'tim_backup_database_archive_failed',
-				__( 'Database export data could not be added to the archive.', 'tim-backup' )
+				__( 'Database export data could not be added to the archive.', 'tim-backup-free' )
 			);
 		}
 
@@ -727,7 +727,7 @@ final class TIM_Backup_Backup_Service {
 		if ( false === $hash ) {
 			return new WP_Error(
 				'tim_backup_database_hash_failed',
-				__( 'Database export data could not be hashed.', 'tim-backup' )
+				__( 'Database export data could not be hashed.', 'tim-backup-free' )
 			);
 		}
 
@@ -750,7 +750,7 @@ final class TIM_Backup_Backup_Service {
 		if ( false === $root || false === $storage_root ) {
 			return new WP_Error(
 				'tim_backup_site_root_invalid',
-				__( 'The WordPress or backup storage path could not be resolved.', 'tim-backup' )
+				__( 'The WordPress or backup storage path could not be resolved.', 'tim-backup-free' )
 			);
 		}
 
@@ -788,7 +788,7 @@ final class TIM_Backup_Backup_Service {
 				if ( ! $this->is_safe_archive_entry( $entry ) || ! $zip->addFile( $real_path, $entry ) ) {
 					return new WP_Error(
 						'tim_backup_file_archive_failed',
-						__( 'A WordPress file could not be added to the backup archive.', 'tim-backup' )
+						__( 'A WordPress file could not be added to the backup archive.', 'tim-backup-free' )
 					);
 				}
 
@@ -797,7 +797,7 @@ final class TIM_Backup_Backup_Service {
 				if ( false === $hash ) {
 					return new WP_Error(
 						'tim_backup_file_hash_failed',
-						__( 'A WordPress file could not be hashed.', 'tim-backup' )
+						__( 'A WordPress file could not be hashed.', 'tim-backup-free' )
 					);
 				}
 
@@ -806,7 +806,7 @@ final class TIM_Backup_Backup_Service {
 		} catch ( UnexpectedValueException $exception ) {
 			return new WP_Error(
 				'tim_backup_file_read_failed',
-				__( 'A WordPress directory could not be read during backup.', 'tim-backup' )
+				__( 'A WordPress directory could not be read during backup.', 'tim-backup-free' )
 			);
 		}
 

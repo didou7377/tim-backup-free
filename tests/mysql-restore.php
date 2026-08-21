@@ -3,7 +3,7 @@
  * Destructive MySQL/MariaDB database restore integration test.
  *
  * Run only in an ephemeral WordPress installation with:
- * wp eval-file wp-content/plugins/tim-backup/tests/mysql-restore.php
+ * wp eval-file wp-content/plugins/tim-backup-free/tests/mysql-restore.php
  *
  * @package TIM_Backup
  */

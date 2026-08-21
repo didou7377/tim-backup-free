@@ -49,14 +49,14 @@ final class TIM_Backup_Restore_Service {
 		if ( empty( $schema ) ) {
 			return new WP_Error(
 				'tim_backup_restore_schema_invalid',
-				__( 'The database schema in the backup is invalid.', 'tim-backup' )
+				__( 'The database schema in the backup is invalid.', 'tim-backup-free' )
 			);
 		}
 
 		if ( strlen( $wpdb->prefix ) > 30 ) {
 			return new WP_Error(
 				'tim_backup_restore_prefix_too_long',
-				__( 'The database prefix is too long for a safe staged restore.', 'tim-backup' )
+				__( 'The database prefix is too long for a safe staged restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -73,7 +73,7 @@ final class TIM_Backup_Restore_Service {
 			) {
 				return new WP_Error(
 					'tim_backup_restore_schema_unsupported',
-					__( 'A database table schema cannot be restored safely by this version.', 'tim-backup' )
+					__( 'A database table schema cannot be restored safely by this version.', 'tim-backup-free' )
 				);
 			}
 
@@ -84,7 +84,7 @@ final class TIM_Backup_Restore_Service {
 			if ( ! $this->is_safe_table_name( $new_table ) || ! $this->is_safe_table_name( $old_table ) ) {
 				return new WP_Error(
 					'tim_backup_restore_table_invalid',
-					__( 'A temporary database table name is invalid.', 'tim-backup' )
+					__( 'A temporary database table name is invalid.', 'tim-backup-free' )
 				);
 			}
 
@@ -135,7 +135,7 @@ final class TIM_Backup_Restore_Service {
 		if ( ! $this->is_safe_table_name( $table ) || ! $this->is_safe_table_name( $new_table ) ) {
 			return new WP_Error(
 				'tim_backup_restore_table_invalid',
-				__( 'A temporary database table name is invalid.', 'tim-backup' )
+				__( 'A temporary database table name is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -146,7 +146,7 @@ final class TIM_Backup_Restore_Service {
 		if ( 1 !== $count || ! is_string( $staged_sql ) ) {
 			return new WP_Error(
 				'tim_backup_restore_create_invalid',
-				__( 'A database CREATE statement did not match its table.', 'tim-backup' )
+				__( 'A database CREATE statement did not match its table.', 'tim-backup-free' )
 			);
 		}
 
@@ -155,7 +155,7 @@ final class TIM_Backup_Restore_Service {
 		if ( false === $wpdb->query( $staged_sql ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Signed and strictly validated CREATE TABLE statement.
 			return new WP_Error(
 				'tim_backup_restore_create_failed',
-				__( 'A temporary database table could not be created.', 'tim-backup' )
+				__( 'A temporary database table could not be created.', 'tim-backup-free' )
 			);
 		}
 
@@ -201,7 +201,7 @@ final class TIM_Backup_Restore_Service {
 		if ( ! $this->is_safe_table_name( $new_table ) || ! is_file( $data_path ) ) {
 			return new WP_Error(
 				'tim_backup_restore_data_missing',
-				__( 'Database table data is missing from the backup.', 'tim-backup' )
+				__( 'Database table data is missing from the backup.', 'tim-backup-free' )
 			);
 		}
 
@@ -210,7 +210,7 @@ final class TIM_Backup_Restore_Service {
 		if ( false === $handle ) {
 			return new WP_Error(
 				'tim_backup_restore_data_missing',
-				__( 'Database table data is missing from the backup.', 'tim-backup' )
+				__( 'Database table data is missing from the backup.', 'tim-backup-free' )
 			);
 		}
 
@@ -220,7 +220,7 @@ final class TIM_Backup_Restore_Service {
 			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			return new WP_Error(
 				'tim_backup_restore_resume_failed',
-				__( 'The database restore could not resume from its saved position.', 'tim-backup' )
+				__( 'The database restore could not resume from its saved position.', 'tim-backup-free' )
 			);
 		}
 
@@ -255,7 +255,7 @@ final class TIM_Backup_Restore_Service {
 				fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 				return new WP_Error(
 					'tim_backup_restore_insert_failed',
-					__( 'A database row could not be restored.', 'tim-backup' )
+					__( 'A database row could not be restored.', 'tim-backup-free' )
 				);
 			}
 
@@ -268,7 +268,7 @@ final class TIM_Backup_Restore_Service {
 		if ( false === $position ) {
 			return new WP_Error(
 				'tim_backup_restore_resume_failed',
-				__( 'The database restore could not save its current position.', 'tim-backup' )
+				__( 'The database restore could not save its current position.', 'tim-backup-free' )
 			);
 		}
 
@@ -311,7 +311,7 @@ final class TIM_Backup_Restore_Service {
 		if ( ! $ready || empty( $table_map ) ) {
 			return new WP_Error(
 				'tim_backup_restore_swap_state_invalid',
-				__( 'The staged database tables are not in a safe state for activation.', 'tim-backup' )
+				__( 'The staged database tables are not in a safe state for activation.', 'tim-backup-free' )
 			);
 		}
 
@@ -325,7 +325,7 @@ final class TIM_Backup_Restore_Service {
 		if ( false === $wpdb->query( 'RENAME TABLE ' . implode( ', ', $renames ) ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Every identifier was strictly validated when state was created.
 			return new WP_Error(
 				'tim_backup_restore_swap_failed',
-				__( 'The restored database tables could not be activated.', 'tim-backup' )
+				__( 'The restored database tables could not be activated.', 'tim-backup-free' )
 			);
 		}
 
@@ -353,7 +353,7 @@ final class TIM_Backup_Restore_Service {
 				if ( false === $wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $table ) . '`' ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Identifier is strictly validated.
 					return new WP_Error(
 						'tim_backup_restore_cleanup_failed',
-						__( 'A temporary database table could not be removed safely.', 'tim-backup' )
+						__( 'A temporary database table could not be removed safely.', 'tim-backup-free' )
 					);
 				}
 			}
@@ -403,7 +403,7 @@ final class TIM_Backup_Restore_Service {
 			$this->storage->release_lock( 'operation', $lock );
 			return new WP_Error(
 				'tim_backup_restore_open_failed',
-				__( 'The verified backup archive could not be opened for restore.', 'tim-backup' )
+				__( 'The verified backup archive could not be opened for restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -436,14 +436,14 @@ final class TIM_Backup_Restore_Service {
 		if ( ! is_array( $schema ) || empty( $schema ) ) {
 			return new WP_Error(
 				'tim_backup_restore_schema_invalid',
-				__( 'The database schema in the backup is invalid.', 'tim-backup' )
+				__( 'The database schema in the backup is invalid.', 'tim-backup-free' )
 			);
 		}
 
 		if ( strlen( $wpdb->prefix ) > 30 ) {
 			return new WP_Error(
 				'tim_backup_restore_prefix_too_long',
-				__( 'The database prefix is too long for a safe staged restore.', 'tim-backup' )
+				__( 'The database prefix is too long for a safe staged restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -462,7 +462,7 @@ final class TIM_Backup_Restore_Service {
 				$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				return new WP_Error(
 					'tim_backup_restore_schema_unsupported',
-					__( 'A database table schema cannot be restored safely by this version.', 'tim-backup' )
+					__( 'A database table schema cannot be restored safely by this version.', 'tim-backup-free' )
 				);
 			}
 
@@ -475,7 +475,7 @@ final class TIM_Backup_Restore_Service {
 				$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				return new WP_Error(
 					'tim_backup_restore_table_invalid',
-					__( 'A temporary database table name is invalid.', 'tim-backup' )
+					__( 'A temporary database table name is invalid.', 'tim-backup-free' )
 				);
 			}
 
@@ -488,7 +488,7 @@ final class TIM_Backup_Restore_Service {
 				$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				return new WP_Error(
 					'tim_backup_restore_create_invalid',
-					__( 'A database CREATE statement did not match its table.', 'tim-backup' )
+					__( 'A database CREATE statement did not match its table.', 'tim-backup-free' )
 				);
 			}
 
@@ -499,7 +499,7 @@ final class TIM_Backup_Restore_Service {
 				$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				return new WP_Error(
 					'tim_backup_restore_create_failed',
-					__( 'A temporary database table could not be created.', 'tim-backup' )
+					__( 'A temporary database table could not be created.', 'tim-backup-free' )
 				);
 			}
 
@@ -517,7 +517,7 @@ final class TIM_Backup_Restore_Service {
 				$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				return new WP_Error(
 					'tim_backup_restore_data_missing',
-					__( 'Database table data is missing from the backup.', 'tim-backup' )
+					__( 'Database table data is missing from the backup.', 'tim-backup-free' )
 				);
 			}
 
@@ -536,7 +536,7 @@ final class TIM_Backup_Restore_Service {
 					$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 					return new WP_Error(
 						'tim_backup_restore_row_invalid',
-						__( 'A database row in the backup is invalid.', 'tim-backup' )
+						__( 'A database row in the backup is invalid.', 'tim-backup-free' )
 					);
 				}
 
@@ -549,7 +549,7 @@ final class TIM_Backup_Restore_Service {
 						$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 						return new WP_Error(
 							'tim_backup_restore_column_invalid',
-							__( 'A database column name in the backup is invalid.', 'tim-backup' )
+							__( 'A database column name in the backup is invalid.', 'tim-backup-free' )
 						);
 					}
 
@@ -561,7 +561,7 @@ final class TIM_Backup_Restore_Service {
 						$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 						return new WP_Error(
 							'tim_backup_restore_value_invalid',
-							__( 'A database value in the backup is invalid.', 'tim-backup' )
+							__( 'A database value in the backup is invalid.', 'tim-backup-free' )
 						);
 					}
 
@@ -574,7 +574,7 @@ final class TIM_Backup_Restore_Service {
 					$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 					return new WP_Error(
 						'tim_backup_restore_insert_failed',
-						__( 'A database row could not be restored.', 'tim-backup' )
+						__( 'A database row could not be restored.', 'tim-backup-free' )
 					);
 				}
 			}
@@ -595,7 +595,7 @@ final class TIM_Backup_Restore_Service {
 			$wpdb->query( 'SET FOREIGN_KEY_CHECKS=1' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			return new WP_Error(
 				'tim_backup_restore_swap_failed',
-				__( 'The restored database tables could not be activated.', 'tim-backup' )
+				__( 'The restored database tables could not be activated.', 'tim-backup-free' )
 			);
 		}
 
@@ -636,7 +636,7 @@ final class TIM_Backup_Restore_Service {
 		if ( ! is_array( $encoded ) ) {
 			return new WP_Error(
 				'tim_backup_restore_row_invalid',
-				__( 'A database row in the backup is invalid.', 'tim-backup' )
+				__( 'A database row in the backup is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -646,7 +646,7 @@ final class TIM_Backup_Restore_Service {
 			if ( 1 !== preg_match( '/\A[A-Za-z0-9_$]+\z/', (string) $column ) ) {
 				return new WP_Error(
 					'tim_backup_restore_column_invalid',
-					__( 'A database column name in the backup is invalid.', 'tim-backup' )
+					__( 'A database column name in the backup is invalid.', 'tim-backup-free' )
 				);
 			}
 
@@ -655,7 +655,7 @@ final class TIM_Backup_Restore_Service {
 			if ( null !== $value && false === $decoded ) {
 				return new WP_Error(
 					'tim_backup_restore_value_invalid',
-					__( 'A database value in the backup is invalid.', 'tim-backup' )
+					__( 'A database value in the backup is invalid.', 'tim-backup-free' )
 				);
 			}
 

@@ -57,14 +57,14 @@ final class TIM_Backup_Storage {
 		if ( ! $this->is_outside_document_root() ) {
 			return new WP_Error(
 				'tim_backup_storage_public',
-				__( 'The backup directory must be outside the public document root. Define TIM_BACKUP_STORAGE_DIR with a private writable path.', 'tim-backup' )
+				__( 'The backup directory must be outside the public document root. Define TIM_BACKUP_STORAGE_DIR with a private writable path.', 'tim-backup-free' )
 			);
 		}
 
 		if ( ! is_dir( $this->directory ) && ! wp_mkdir_p( $this->directory ) ) {
 			return new WP_Error(
 				'tim_backup_storage_create_failed',
-				__( 'TIM Backup could not create private storage outside the document root. Define TIM_BACKUP_STORAGE_DIR with a writable private path.', 'tim-backup' )
+				__( 'TIM Backup could not create private storage outside the document root. Define TIM_BACKUP_STORAGE_DIR with a writable private path.', 'tim-backup-free' )
 			);
 		}
 
@@ -80,7 +80,7 @@ final class TIM_Backup_Storage {
 			if ( ! file_exists( $path ) && false === file_put_contents( $path, $contents, LOCK_EX ) ) {
 				return new WP_Error(
 					'tim_backup_storage_protection_failed',
-					__( 'TIM Backup could not protect its storage directory.', 'tim-backup' )
+					__( 'TIM Backup could not protect its storage directory.', 'tim-backup-free' )
 				);
 			}
 		}
@@ -162,7 +162,7 @@ final class TIM_Backup_Storage {
 		if ( 1 !== preg_match( '/\A[a-f0-9]{32}\z/', $id ) ) {
 			return new WP_Error(
 				'tim_backup_invalid_id',
-				__( 'The backup identifier is invalid.', 'tim-backup' )
+				__( 'The backup identifier is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -229,7 +229,7 @@ final class TIM_Backup_Storage {
 
 		return new WP_Error(
 			'tim_backup_not_found',
-			__( 'The requested backup does not exist.', 'tim-backup' )
+			__( 'The requested backup does not exist.', 'tim-backup-free' )
 		);
 	}
 
@@ -244,7 +244,7 @@ final class TIM_Backup_Storage {
 		if ( empty( $metadata['id'] ) || is_wp_error( $this->archive_path( (string) $metadata['id'] ) ) ) {
 			return new WP_Error(
 				'tim_backup_invalid_metadata',
-				__( 'The backup metadata is invalid.', 'tim-backup' )
+				__( 'The backup metadata is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -274,7 +274,7 @@ final class TIM_Backup_Storage {
 			if ( null === $expired_index ) {
 				return new WP_Error(
 					'tim_backup_retention_failed',
-					__( 'No backup could be selected for local rotation.', 'tim-backup' )
+					__( 'No backup could be selected for local rotation.', 'tim-backup-free' )
 				);
 			}
 
@@ -294,7 +294,7 @@ final class TIM_Backup_Storage {
 		if ( $expected_ids !== $stored_ids ) {
 			return new WP_Error(
 				'tim_backup_index_update_failed',
-				__( 'The backup index could not be updated.', 'tim-backup' )
+				__( 'The backup index could not be updated.', 'tim-backup-free' )
 			);
 		}
 
@@ -347,7 +347,7 @@ final class TIM_Backup_Storage {
 		if ( $expected_ids !== $stored_ids ) {
 			return new WP_Error(
 				'tim_backup_index_restore_failed',
-				__( 'The backup index could not be preserved after restore.', 'tim-backup' )
+				__( 'The backup index could not be preserved after restore.', 'tim-backup-free' )
 			);
 		}
 
@@ -376,7 +376,7 @@ final class TIM_Backup_Storage {
 		if ( is_file( $path ) && ! wp_delete_file( $path ) ) {
 			return new WP_Error(
 				'tim_backup_delete_failed',
-				__( 'The backup archive could not be deleted.', 'tim-backup' )
+				__( 'The backup archive could not be deleted.', 'tim-backup-free' )
 			);
 		}
 
@@ -413,7 +413,7 @@ final class TIM_Backup_Storage {
 
 			return new WP_Error(
 				'tim_backup_operation_locked',
-				__( 'Another TIM Backup operation is already running.', 'tim-backup' )
+				__( 'Another TIM Backup operation is already running.', 'tim-backup-free' )
 			);
 		}
 

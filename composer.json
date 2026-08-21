@@ -1,5 +1,5 @@
 {
-  "name": "tim-plugins/tim-backup",
+  "name": "tim-plugins/tim-backup-free",
   "description": "Secure local backup and restore plugin for WordPress.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
