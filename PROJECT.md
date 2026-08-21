@@ -8,8 +8,8 @@ an external service.
 
 ## Current release
 
-- Version: `0.2.0`
-- Status: guided restore release
+- Version: `0.3.0`
+- Status: emergency rollback release
 - Distribution: WordPress.org
 - Repository: `didou7377/tim-backup-free`
 - License: GPL-2.0-or-later
@@ -22,8 +22,10 @@ an external service.
 - A fixed weekly full-backup schedule using WP-Cron.
 - At most three plugin-managed local backup archives.
 - Authenticated archive downloads and deletion.
-- Guided, resumable database restore after explicit confirmation and a current
-  database safety backup.
+- Guided, resumable database restore after explicit confirmation and a hidden
+  emergency rollback.
+- One rollback retained for ten days after success, excluded from normal backup
+  rotation and removable before another restore.
 - Archive integrity and authenticity verification before restore.
 - Failure emails to the WordPress administration address.
 - WooCommerce compatibility, including HPOS tables, by backing up all tables
@@ -76,7 +78,7 @@ downloaded by the WordPress.org-hosted plugin.
 - Refuse concurrent backups and restores through atomic locks.
 - Drain already-running requests through shared/exclusive filesystem locks,
   then pause new web, REST and Cron traffic with a filesystem marker from the
-  safety snapshot through final cleanup.
+  rollback snapshot through final cleanup.
 - Never follow symbolic links while collecting site files.
 - Do not log credentials, salts, database contents or customer data.
 - Do not claim that software can be completely vulnerability-free.
@@ -152,13 +154,21 @@ changes require explicit backwards-compatibility handling.
 
 ## Status log
 
+### 0.3.0
+
+- Added a hidden emergency rollback that remains available for ten days after a
+  successful database restore.
+- Added guarded emergency rollback execution, explicit cleanup, automatic
+  expiry, and restore blocking while a rollback is retained.
+- Kept rollback artifacts outside normal backup lists and three-backup rotation.
+
 ### 0.2.0
 
 - Added the guided, resumable database restore assistant with authenticated
   server-side progress.
 - Added bounded database chunks, staged imports, atomic activation and durable
   cleanup recovery.
-- Added a database-independent journal key, idempotent safety backups and
+- Added a database-independent journal key, idempotent rollback creation and
   request draining with protected maintenance mode.
 
 ### 0.1.0
@@ -174,7 +184,7 @@ changes require explicit backwards-compatibility handling.
   verification before download, ZIP special-file rejection, InnoDB consistent
   snapshots, deterministic primary-key ordering, view rejection and archive
   hashes in metadata.
-- Restore uses a dedicated assistant, creates a protected database safety backup,
+- Restore uses a dedicated assistant, creates a protected emergency rollback,
   journals progress outside the database, resumes bounded row imports, preserves
   the live backup index and activates staged tables atomically.
 - Implemented fixed weekly backups and failure-only administrator email.

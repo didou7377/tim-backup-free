@@ -104,16 +104,20 @@ final class TIM_Backup_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'tim_backup_restore_job' ),
 				'actions' => array(
-					'start'   => 'tim_backup_restore_start',
-					'advance' => 'tim_backup_restore_advance',
-					'status'  => 'tim_backup_restore_status',
-					'cancel'  => 'tim_backup_restore_cancel',
+					'start'          => 'tim_backup_restore_start',
+					'advance'        => 'tim_backup_restore_advance',
+					'status'         => 'tim_backup_restore_status',
+					'cancel'         => 'tim_backup_restore_cancel',
+					'rollbackStart'  => 'tim_backup_rollback_start',
+					'rollbackDelete' => 'tim_backup_rollback_delete',
 				),
 				'text'    => array(
-					'requestFailed' => __( 'The restore request failed. You can safely reopen this page to continue.', 'tim-backup-free' ),
-					'cancelConfirm' => __( 'Cancel this restore and remove all prepared temporary database tables?', 'tim-backup-free' ),
-					'working'       => __( 'Restore in progress. Do not close this page unless necessary.', 'tim-backup-free' ),
-					'rows'          => __( 'rows', 'tim-backup-free' ),
+					'requestFailed'        => __( 'The restore request failed. You can safely reopen this page to continue.', 'tim-backup-free' ),
+					'cancelConfirm'        => __( 'Cancel this restore and remove all prepared temporary database tables?', 'tim-backup-free' ),
+					'rollbackConfirm'      => __( 'Use the rollback to restore the database state from before the last restore?', 'tim-backup-free' ),
+					'rollbackDeleteConfirm' => __( 'Permanently delete the rollback? Another restore can only start after it is removed.', 'tim-backup-free' ),
+					'working'              => __( 'Restore in progress. Do not close this page unless necessary.', 'tim-backup-free' ),
+					'rows'                 => __( 'rows', 'tim-backup-free' ),
 				),
 			)
 		);
@@ -214,7 +218,7 @@ final class TIM_Backup_Admin {
 	 * @return void
 	 */
 	private function render_restore_assistant(): void {
-		$backups    = $this->storage->all();
+		$backups     = $this->storage->backups();
 		$selected   = isset( $_GET['backup_id'] ) ? sanitize_text_field( wp_unslash( $_GET['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only preselection.
 		$backups_url = add_query_arg(
 			array(
@@ -235,18 +239,30 @@ final class TIM_Backup_Admin {
 			<section class="tim-card tim-card--wide tim-restore-assistant__intro">
 				<p class="tim-card__label"><?php esc_html_e( 'Guided restore', 'tim-backup-free' ); ?></p>
 				<h2><?php esc_html_e( 'Restore a database safely', 'tim-backup-free' ); ?></h2>
-				<p><?php esc_html_e( 'TIM Backup verifies the selected archive, creates a current database safety backup, prepares temporary tables, and activates them only after every row was imported successfully.', 'tim-backup-free' ); ?></p>
+				<p><?php esc_html_e( 'TIM Backup verifies the selected archive, creates an emergency rollback, prepares temporary tables, and activates them only after every row was imported successfully.', 'tim-backup-free' ); ?></p>
 			</section>
 
-			<?php if ( empty( $backups ) ) : ?>
-				<section class="tim-card tim-card--wide">
-					<h2><?php esc_html_e( 'No backup is available', 'tim-backup-free' ); ?></h2>
-					<p><?php esc_html_e( 'Create a database or full backup before opening the restore assistant.', 'tim-backup-free' ); ?></p>
-				</section>
-			<?php else : ?>
-				<div class="tim-restore-assistant__layout">
-					<section class="tim-card tim-restore-assistant__selection" data-tim-restore-selection>
-						<h2><?php esc_html_e( '1. Select backup', 'tim-backup-free' ); ?></h2>
+			<section class="tim-card tim-card--wide tim-rollback-panel" data-tim-rollback-panel hidden>
+				<p class="tim-card__label"><?php esc_html_e( 'Emergency protection', 'tim-backup-free' ); ?></p>
+				<h2><?php esc_html_e( 'A rollback is available', 'tim-backup-free' ); ?></h2>
+				<p><?php esc_html_e( 'A new restore cannot start until this rollback has been used or removed.', 'tim-backup-free' ); ?></p>
+				<p data-tim-rollback-details></p>
+				<div class="tim-rollback-panel__actions">
+					<button type="button" class="button button-primary" data-tim-rollback-start>
+						<?php esc_html_e( 'Run emergency rollback', 'tim-backup-free' ); ?>
+					</button>
+					<button type="button" class="button button-link-delete" data-tim-rollback-delete>
+						<?php esc_html_e( 'Delete rollback and clean up', 'tim-backup-free' ); ?>
+					</button>
+				</div>
+			</section>
+
+			<div class="tim-restore-assistant__layout">
+				<section class="tim-card tim-restore-assistant__selection" data-tim-restore-selection>
+					<h2><?php esc_html_e( '1. Select backup', 'tim-backup-free' ); ?></h2>
+					<?php if ( empty( $backups ) ) : ?>
+						<p><?php esc_html_e( 'No normal backup is available. You can still use or remove the retained rollback.', 'tim-backup-free' ); ?></p>
+					<?php else : ?>
 						<label for="tim-restore-backup"><strong><?php esc_html_e( 'Backup archive', 'tim-backup-free' ); ?></strong></label>
 						<select id="tim-restore-backup" data-tim-restore-backup>
 							<?php foreach ( $backups as $backup ) : ?>
@@ -269,7 +285,7 @@ final class TIM_Backup_Admin {
 
 						<div class="tim-restore-assistant__warning">
 							<span class="dashicons dashicons-warning" aria-hidden="true"></span>
-							<p><strong><?php esc_html_e( 'Current database data will be replaced.', 'tim-backup-free' ); ?></strong><br><?php esc_html_e( 'Website files are not restored. A database safety backup is created first.', 'tim-backup-free' ); ?></p>
+							<p><strong><?php esc_html_e( 'Current database data will be replaced.', 'tim-backup-free' ); ?></strong><br><?php esc_html_e( 'Website files are not restored. An emergency rollback is created first and retained for ten days after success.', 'tim-backup-free' ); ?></p>
 						</div>
 
 						<label class="tim-restore-assistant__confirm">
@@ -280,42 +296,42 @@ final class TIM_Backup_Admin {
 						<button type="button" class="button button-primary button-hero" data-tim-restore-start disabled>
 							<?php esc_html_e( 'Start database restore', 'tim-backup-free' ); ?>
 						</button>
-					</section>
+					<?php endif; ?>
+				</section>
 
-					<section class="tim-card tim-restore-assistant__progress" data-tim-restore-progress aria-live="polite">
-						<h2><?php esc_html_e( '2. Restore progress', 'tim-backup-free' ); ?></h2>
-						<ol class="tim-restore-steps" data-tim-restore-steps>
-							<?php
-							$steps = array(
-								__( 'Verify backup archive', 'tim-backup-free' ),
-								__( 'Create current database safety backup', 'tim-backup-free' ),
-								__( 'Prepare verified database files', 'tim-backup-free' ),
-								__( 'Create temporary database tables', 'tim-backup-free' ),
-								__( 'Restore database data', 'tim-backup-free' ),
-								__( 'Activate restored database atomically', 'tim-backup-free' ),
-								__( 'Clean up and refresh WordPress', 'tim-backup-free' ),
-								__( 'Restore complete', 'tim-backup-free' ),
-							);
+				<section class="tim-card tim-restore-assistant__progress" data-tim-restore-progress aria-live="polite">
+					<h2><?php esc_html_e( '2. Restore progress', 'tim-backup-free' ); ?></h2>
+					<ol class="tim-restore-steps" data-tim-restore-steps>
+						<?php
+						$steps = array(
+							__( 'Verify backup archive', 'tim-backup-free' ),
+							__( 'Create rollback', 'tim-backup-free' ),
+							__( 'Prepare verified database files', 'tim-backup-free' ),
+							__( 'Create temporary database tables', 'tim-backup-free' ),
+							__( 'Restore database data', 'tim-backup-free' ),
+							__( 'Activate restored database atomically', 'tim-backup-free' ),
+							__( 'Clean up and refresh WordPress', 'tim-backup-free' ),
+							__( 'Restore complete', 'tim-backup-free' ),
+						);
 
-							foreach ( $steps as $step ) :
-								?>
-								<li class="tim-restore-step is-waiting">
-									<span class="tim-restore-step__icon dashicons dashicons-marker" aria-hidden="true"></span>
-									<span><?php echo esc_html( $step ); ?></span>
-								</li>
-							<?php endforeach; ?>
-						</ol>
-						<p class="tim-restore-assistant__detail" data-tim-restore-detail><?php esc_html_e( 'Select a backup to begin.', 'tim-backup-free' ); ?></p>
-						<div class="tim-restore-assistant__error" data-tim-restore-error hidden></div>
-						<button type="button" class="button button-primary" data-tim-restore-retry hidden>
-							<?php esc_html_e( 'Retry final cleanup', 'tim-backup-free' ); ?>
-						</button>
-						<button type="button" class="button button-link-delete" data-tim-restore-cancel hidden>
-							<?php esc_html_e( 'Cancel restore', 'tim-backup-free' ); ?>
-						</button>
-					</section>
-				</div>
-			<?php endif; ?>
+						foreach ( $steps as $step ) :
+							?>
+							<li class="tim-restore-step is-waiting">
+								<span class="tim-restore-step__icon dashicons dashicons-marker" aria-hidden="true"></span>
+								<span><?php echo esc_html( $step ); ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ol>
+					<p class="tim-restore-assistant__detail" data-tim-restore-detail><?php esc_html_e( 'Select a backup to begin.', 'tim-backup-free' ); ?></p>
+					<div class="tim-restore-assistant__error" data-tim-restore-error hidden></div>
+					<button type="button" class="button button-primary" data-tim-restore-retry hidden>
+						<?php esc_html_e( 'Retry final cleanup', 'tim-backup-free' ); ?>
+					</button>
+					<button type="button" class="button button-link-delete" data-tim-restore-cancel hidden>
+						<?php esc_html_e( 'Cancel restore', 'tim-backup-free' ); ?>
+					</button>
+				</section>
+			</div>
 		</div>
 		<?php
 	}
@@ -326,7 +342,7 @@ final class TIM_Backup_Admin {
 	 * @return void
 	 */
 	private function render_overview(): void {
-		$backups    = $this->storage->all();
+		$backups    = $this->storage->backups();
 		$latest     = $backups[0] ?? null;
 		$next       = wp_next_scheduled( 'tim_backup_weekly_event' );
 		$backups_url = add_query_arg(
@@ -413,7 +429,14 @@ final class TIM_Backup_Admin {
 	 * @return void
 	 */
 	private function render_backups(): void {
-		$backups = $this->storage->all();
+		$backups     = $this->storage->backups();
+		$restore_url = add_query_arg(
+			array(
+				'page' => 'tim-backup-free',
+				'view' => 'restore',
+			),
+			admin_url( 'admin.php' )
+		);
 		?>
 		<div class="tim-backup__grid tim-backup__grid--two">
 			<?php $this->render_create_card( 'full' ); ?>
@@ -426,7 +449,10 @@ final class TIM_Backup_Admin {
 					<p class="tim-card__label"><?php esc_html_e( 'Protected archives', 'tim-backup-free' ); ?></p>
 					<h2><?php esc_html_e( 'Local backups', 'tim-backup-free' ); ?></h2>
 				</div>
-				<span><?php esc_html_e( 'Maximum: 3', 'tim-backup-free' ); ?></span>
+				<div class="tim-card__actions">
+					<span><?php esc_html_e( 'Maximum: 3', 'tim-backup-free' ); ?></span>
+					<a class="button" href="<?php echo esc_url( $restore_url ); ?>"><?php esc_html_e( 'Open restore assistant', 'tim-backup-free' ); ?></a>
+				</div>
 			</div>
 
 			<?php if ( empty( $backups ) ) : ?>

@@ -49,13 +49,21 @@ final class TIM_Backup_Backup_Service {
 	 * @param string $type Backup type: full or database.
 	 * @param string $protected_id Backup that retention must keep.
 	 * @param string $reserved_id Optional pre-journaled id for idempotent creation.
+	 * @param string $purpose Archive purpose: backup or rollback.
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public function create( string $type, string $protected_id = '', string $reserved_id = '' ) {
+	public function create( string $type, string $protected_id = '', string $reserved_id = '', string $purpose = 'backup' ) {
 		if ( ! in_array( $type, array( 'full', 'database' ), true ) ) {
 			return new WP_Error(
 				'tim_backup_invalid_type',
 				__( 'The requested backup type is invalid.', 'tim-backup-free' )
+			);
+		}
+
+		if ( ! in_array( $purpose, array( 'backup', 'rollback' ), true ) ) {
+			return new WP_Error(
+				'tim_backup_invalid_purpose',
+				__( 'The requested archive purpose is invalid.', 'tim-backup-free' )
 			);
 		}
 
@@ -119,6 +127,7 @@ final class TIM_Backup_Backup_Service {
 				'size'         => (int) filesize( $archive_path ),
 				'archive_hash' => $archive_hash,
 				'verified'     => true,
+				'purpose'      => $purpose,
 			);
 			$registered = $this->storage->register( $metadata, $protected_id );
 			$this->storage->release_lock( 'operation', $lock );
@@ -175,6 +184,7 @@ final class TIM_Backup_Backup_Service {
 			'size'         => (int) filesize( $archive_path ),
 			'archive_hash' => $archive_hash,
 			'verified'     => true,
+			'purpose'      => $purpose,
 		);
 
 		$registered = $this->storage->register( $metadata, $protected_id );

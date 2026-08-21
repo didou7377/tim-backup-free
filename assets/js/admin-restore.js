@@ -13,6 +13,10 @@
 	const start = root.querySelector('[data-tim-restore-start]');
 	const cancel = root.querySelector('[data-tim-restore-cancel]');
 	const retry = root.querySelector('[data-tim-restore-retry]');
+	const rollbackPanel = root.querySelector('[data-tim-rollback-panel]');
+	const rollbackDetails = root.querySelector('[data-tim-rollback-details]');
+	const rollbackStart = root.querySelector('[data-tim-rollback-start]');
+	const rollbackDelete = root.querySelector('[data-tim-rollback-delete]');
 	const selection = root.querySelector('[data-tim-restore-selection]');
 	const steps = root.querySelector('[data-tim-restore-steps]');
 	const detail = root.querySelector('[data-tim-restore-detail]');
@@ -54,7 +58,26 @@
 	}
 
 	function render(job) {
-		if (!job || !steps) {
+		if (!job) {
+			return;
+		}
+
+		if (rollbackPanel) {
+			rollbackPanel.hidden = !job.rollback;
+		}
+		if (rollbackDetails) {
+			rollbackDetails.textContent = job.rollback?.details || '';
+		}
+		if (rollbackStart) {
+			rollbackStart.hidden = !job.rollback?.canRun;
+		}
+		if (rollbackDelete) {
+			rollbackDelete.hidden = !job.rollback?.canDelete;
+		}
+
+		setSelectionLocked(job.status === 'active' || Boolean(job.rollback));
+
+		if (!steps) {
 			return;
 		}
 
@@ -105,7 +128,6 @@
 			retry.hidden = !job.canRetry;
 		}
 
-		setSelectionLocked(job.status === 'active');
 	}
 
 	async function advanceUntilDone(job) {
@@ -173,7 +195,6 @@
 		try {
 			const job = await request('cancel');
 			render(job);
-			setSelectionLocked(false);
 		} catch (exception) {
 			if (error) {
 				error.hidden = false;
@@ -195,6 +216,40 @@
 		}
 	});
 
+	rollbackStart?.addEventListener('click', async function () {
+		if (!window.confirm(config.text.rollbackConfirm) || running) {
+			return;
+		}
+
+		try {
+			const job = await request('rollbackStart');
+			render(job);
+			await advanceUntilDone(job);
+		} catch (exception) {
+			if (error) {
+				error.hidden = false;
+				error.textContent = exception.message || config.text.requestFailed;
+			}
+		}
+	});
+
+	rollbackDelete?.addEventListener('click', async function () {
+		if (!window.confirm(config.text.rollbackDeleteConfirm) || running) {
+			return;
+		}
+
+		try {
+			const job = await request('rollbackDelete');
+			render(job);
+			setSelectionLocked(false);
+		} catch (exception) {
+			if (error) {
+				error.hidden = false;
+				error.textContent = exception.message || config.text.requestFailed;
+			}
+		}
+	});
+
 	window.addEventListener('beforeunload', function (event) {
 		if (!running) {
 			return;
@@ -206,14 +261,10 @@
 
 	request('status')
 		.then(function (job) {
-			if (job.status === 'active' || job.status === 'error') {
-				render(job);
-			}
+			render(job);
 
 			if (job.status === 'active') {
 				advanceUntilDone(job);
-			} else if (job.status !== 'error') {
-				setSelectionLocked(false);
 			}
 		})
 		.catch(function () {

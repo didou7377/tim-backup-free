@@ -74,21 +74,31 @@ if ( is_wp_error( $result ) ) {
 	throw new RuntimeException( 'Restore job could not start: ' . $result->get_error_message() );
 }
 
-for ( $attempt = 0; $attempt < 1000 && 'active' === (string) $result['status']; ++$attempt ) {
-	// Recreate every service to prove that progress survives independent requests.
-	$storage = new TIM_Backup_Storage();
-	$backups = new TIM_Backup_Backup_Service( $storage );
-	$restore = new TIM_Backup_Restore_Service( $storage, $backups );
-	$jobs    = new TIM_Backup_Restore_Job_Service( $storage, $backups, $restore );
-	$result  = $jobs->advance();
+$finish_job = static function ( array $state ): array {
+	for ( $attempt = 0; $attempt < 1000 && 'active' === (string) $state['status']; ++$attempt ) {
+		// Recreate every service to prove that progress survives independent requests.
+		$storage = new TIM_Backup_Storage();
+		$backups = new TIM_Backup_Backup_Service( $storage );
+		$restore = new TIM_Backup_Restore_Service( $storage, $backups );
+		$jobs    = new TIM_Backup_Restore_Job_Service( $storage, $backups, $restore );
+		$state   = $jobs->advance();
 
-	if ( is_wp_error( $result ) ) {
-		throw new RuntimeException( 'Database restore failed: ' . $result->get_error_message() );
+		if ( is_wp_error( $state ) ) {
+			throw new RuntimeException( 'Database restore failed: ' . $state->get_error_message() );
+		}
 	}
-}
+
+	return $state;
+};
+
+$result = $finish_job( $result );
 
 if ( 'completed' !== (string) $result['status'] ) {
 	throw new RuntimeException( 'Database restore job did not complete: ' . (string) ( $result['error'] ?? 'attempt limit reached' ) );
+}
+
+if ( ! empty( $result['canCancel'] ) || ! empty( $result['canRetry'] ) ) {
+	throw new RuntimeException( 'Completed restore exposed an invalid recovery action.' );
 }
 
 if ( 'before-backup' !== get_option( 'tim_backup_restore_probe' ) ) {
@@ -97,6 +107,93 @@ if ( 'before-backup' !== get_option( 'tim_backup_restore_probe' ) ) {
 
 if ( 6 !== (int) $GLOBALS['wpdb']->get_var( "SELECT COUNT(*) FROM `{$chunk_table}`" ) ) {
 	throw new RuntimeException( 'Database restore did not restore all chunked rows.' );
+}
+
+$rollback = $storage->rollback();
+
+if (
+	! is_array( $rollback )
+	|| count( $storage->all() ) !== count( $storage->backups() ) + 1
+	|| (int) ( $result['rollback']['expiresAt'] ?? 0 ) <= time()
+	|| (int) ( $result['rollback']['expiresAt'] ?? 0 ) !== (int) wp_next_scheduled( TIM_Backup_Restore_Job_Service::ROLLBACK_CLEANUP_HOOK )
+) {
+	throw new RuntimeException( 'Completed restore did not retain one hidden rollback.' );
+}
+
+$blocked = $jobs->start( (string) $backup['id'], 1 );
+
+if ( ! is_wp_error( $blocked ) || 'tim_backup_rollback_cleanup_required' !== $blocked->get_error_code() ) {
+	throw new RuntimeException( 'A retained rollback did not block the next restore.' );
+}
+
+update_option( 'tim_backup_restore_probe', 'after-successful-restore', false );
+$GLOBALS['wpdb']->query( "TRUNCATE TABLE `{$chunk_table}`" );
+$result = $jobs->start_rollback( 1 );
+
+if ( is_wp_error( $result ) ) {
+	throw new RuntimeException( 'Emergency rollback could not start: ' . $result->get_error_message() );
+}
+
+$result = $finish_job( $result );
+
+if (
+	'completed' !== (string) $result['status']
+	|| 'after-backup' !== get_option( 'tim_backup_restore_probe' )
+	|| 0 !== (int) $GLOBALS['wpdb']->get_var( "SELECT COUNT(*) FROM `{$chunk_table}`" )
+	|| null !== $storage->rollback()
+) {
+	throw new RuntimeException( 'Emergency rollback did not restore the pre-restore database state.' );
+}
+
+$small_backup = $backups->create( 'database' );
+
+if ( is_wp_error( $small_backup ) ) {
+	throw new RuntimeException( 'Small rollback lifecycle fixture could not be created.' );
+}
+
+update_option( 'tim_backup_restore_probe', 'before-manual-cleanup', false );
+$result = $jobs->start( (string) $small_backup['id'], 1 );
+
+if ( is_wp_error( $result ) ) {
+	throw new RuntimeException( 'Manual-cleanup restore could not start.' );
+}
+
+$result = $finish_job( $result );
+$result = $jobs->delete_rollback();
+
+if ( is_wp_error( $result ) || null !== $storage->rollback() ) {
+	throw new RuntimeException( 'Manual rollback cleanup failed.' );
+}
+
+$result = $jobs->start( (string) $small_backup['id'], 1 );
+
+if ( is_wp_error( $result ) ) {
+	throw new RuntimeException( 'Restore remained blocked after rollback cleanup.' );
+}
+
+$result = $finish_job( $result );
+$journal_reflection = new ReflectionClass( $jobs );
+$load_journal       = $journal_reflection->getMethod( 'load' );
+$save_journal       = $journal_reflection->getMethod( 'save' );
+$load_journal->setAccessible( true );
+$save_journal->setAccessible( true );
+$journal = $load_journal->invoke( $jobs );
+
+if ( ! is_array( $journal ) ) {
+	throw new RuntimeException( 'Rollback journal could not be loaded for expiry testing.' );
+}
+
+$journal['rollback_expires_at'] = time() - 1;
+$saved_journal = $save_journal->invoke( $jobs, $journal );
+
+if ( is_wp_error( $saved_journal ) ) {
+	throw new RuntimeException( 'Rollback expiry fixture could not be saved.' );
+}
+
+$jobs->cleanup_expired_rollback();
+
+if ( null !== $storage->rollback() ) {
+	throw new RuntimeException( 'Expired rollback was not removed automatically.' );
 }
 
 foreach ( $storage->all() as $managed_backup ) {

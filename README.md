@@ -1,10 +1,13 @@
 # TIM Backup
 
 TIM Backup is a security-focused local backup plugin for single-site WordPress.
-Version `0.2.0` creates full or database-only archives, verifies them, retains up
+Version `0.3.0` creates full or database-only archives, verifies them, retains up
 to three local copies, and provides authenticated downloads plus staged
 database-only restore through a guided, resumable assistant. Restore progress is
-journaled outside the database and row imports continue in bounded batches.
+journaled outside the database and row imports continue in bounded batches. A
+hidden emergency rollback preserves the pre-restore database state for ten days
+after success, without consuming a normal backup slot. Another restore remains
+blocked until that rollback is used or removed.
 Full-file restore remains disabled until it has a crash-safe rollback
 implementation.
 

@@ -100,7 +100,11 @@ final class TIM_Backup_Plugin {
 		add_action( 'wp_ajax_tim_backup_restore_advance', array( $this, 'handle_restore_advance' ) );
 		add_action( 'wp_ajax_tim_backup_restore_status', array( $this, 'handle_restore_status' ) );
 		add_action( 'wp_ajax_tim_backup_restore_cancel', array( $this, 'handle_restore_cancel' ) );
+		add_action( 'wp_ajax_tim_backup_rollback_start', array( $this, 'handle_rollback_start' ) );
+		add_action( 'wp_ajax_tim_backup_rollback_delete', array( $this, 'handle_rollback_delete' ) );
 		add_action( self::CRON_HOOK, array( $this, 'run_scheduled_backup' ) );
+		add_action( TIM_Backup_Restore_Job_Service::ROLLBACK_CLEANUP_HOOK, array( $this->restore_jobs, 'cleanup_expired_rollback' ) );
+		add_action( 'init', array( $this->restore_jobs, 'cleanup_expired_rollback' ), 20 );
 
 		if ( is_admin() ) {
 			$admin = new TIM_Backup_Admin( $this->storage, $this->restore_jobs );
@@ -226,6 +230,7 @@ final class TIM_Backup_Plugin {
 	 */
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( self::CRON_HOOK );
+		wp_clear_scheduled_hook( TIM_Backup_Restore_Job_Service::ROLLBACK_CLEANUP_HOOK );
 	}
 
 	/**
@@ -367,6 +372,34 @@ final class TIM_Backup_Plugin {
 	}
 
 	/**
+	 * Starts the retained emergency rollback.
+	 *
+	 * @return void
+	 */
+	public function handle_rollback_start(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$result = $this->can_operate();
+
+		if ( ! is_wp_error( $result ) ) {
+			$result = $this->restore_jobs->start_rollback( get_current_user_id() );
+		}
+
+		$this->send_restore_response( $result );
+	}
+
+	/**
+	 * Deletes the retained rollback after explicit confirmation.
+	 *
+	 * @return void
+	 */
+	public function handle_rollback_delete(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$this->send_restore_response( $this->restore_jobs->delete_rollback() );
+	}
+
+	/**
 	 * Streams an authenticated managed archive.
 	 *
 	 * @return void
@@ -436,6 +469,8 @@ final class TIM_Backup_Plugin {
 					'tim_backup_restore_advance',
 					'tim_backup_restore_status',
 					'tim_backup_restore_cancel',
+					'tim_backup_rollback_start',
+					'tim_backup_rollback_delete',
 				),
 				true
 			)
@@ -454,8 +489,8 @@ final class TIM_Backup_Plugin {
 		nocache_headers();
 		header( 'Retry-After: 60' );
 		wp_die(
-			esc_html__( 'TIM Backup is restoring the database. Please try again shortly.', 'tim-backup-free' ),
-			esc_html__( 'Database restore in progress', 'tim-backup-free' ),
+			esc_html__( 'Maintenance work is in progress. The website will be available again shortly.', 'tim-backup-free' ),
+			esc_html__( 'Maintenance mode', 'tim-backup-free' ),
 			array( 'response' => 503 )
 		);
 	}
@@ -469,7 +504,11 @@ final class TIM_Backup_Plugin {
 		if ( is_multisite() ) {
 			return new WP_Error(
 				'tim_backup_multisite_unsupported',
-				__( 'TIM Backup Free 0.2.0 does not support WordPress Multisite.', 'tim-backup-free' )
+				sprintf(
+					/* translators: %s: Current plugin version. */
+					__( 'TIM Backup Free %s does not support WordPress Multisite.', 'tim-backup-free' ),
+					TIM_BACKUP_VERSION
+				)
 			);
 		}
 

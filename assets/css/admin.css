@@ -161,9 +161,18 @@
 	margin: 3px 0;
 }
 
-.tim-card__heading > span {
+.tim-card__heading > span,
+.tim-card__actions > span {
 	color: var(--tim-muted);
 	font-size: 13px;
+}
+
+.tim-card__actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
 }
 
 .tim-check-list,
@@ -318,6 +327,10 @@
 	background: var(--tim-brand-dark);
 }
 
+.tim-backup [hidden] {
+	display: none !important;
+}
+
 .tim-restore-assistant__topbar {
 	margin: 0 0 18px;
 }
@@ -329,6 +342,18 @@
 .tim-restore-assistant__intro {
 	border-color: #cfd9ff;
 	background: linear-gradient(145deg, #fff, #f3f6ff);
+}
+
+.tim-rollback-panel {
+	border-color: #f0b849;
+	background: #fffaeb;
+}
+
+.tim-rollback-panel__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 16px;
 }
 
 .tim-restore-assistant__layout {

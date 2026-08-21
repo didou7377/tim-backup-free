@@ -215,6 +215,74 @@ final class TIM_Backup_Storage {
 	}
 
 	/**
+	 * Returns normal managed backups without rollback artifacts.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function backups(): array {
+		return array_values(
+			array_filter(
+				$this->all(),
+				static function ( array $item ): bool {
+					return 'rollback' !== (string) ( $item['purpose'] ?? 'backup' );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Returns the newest managed rollback artifact.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function rollback(): ?array {
+		foreach ( $this->all() as $item ) {
+			if ( 'rollback' === (string) ( $item['purpose'] ?? 'backup' ) ) {
+				return $item;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Updates an indexed archive purpose without changing its file.
+	 *
+	 * @param string $id Archive identifier.
+	 * @param string $purpose Archive purpose.
+	 * @return true|WP_Error
+	 */
+	public function set_purpose( string $id, string $purpose ) {
+		if ( ! in_array( $purpose, array( 'backup', 'rollback' ), true ) ) {
+			return new WP_Error(
+				'tim_backup_invalid_purpose',
+				__( 'The requested archive purpose is invalid.', 'tim-backup-free' )
+			);
+		}
+
+		$items = $this->all();
+		$found = false;
+
+		foreach ( $items as &$item ) {
+			if ( hash_equals( (string) ( $item['id'] ?? '' ), $id ) ) {
+				$item['purpose'] = $purpose;
+				$found           = true;
+				break;
+			}
+		}
+		unset( $item );
+
+		if ( ! $found ) {
+			return new WP_Error(
+				'tim_backup_not_found',
+				__( 'The requested backup does not exist.', 'tim-backup-free' )
+			);
+		}
+
+		return $this->save_index( $items );
+	}
+
+	/**
 	 * Finds one indexed backup.
 	 *
 	 * @param string $id Backup identifier.
@@ -260,12 +328,23 @@ final class TIM_Backup_Storage {
 
 		$expired_items = array();
 		$item_count    = count( $items );
+		$backup_count  = count(
+			array_filter(
+				$items,
+				static function ( array $item ): bool {
+					return 'rollback' !== (string) ( $item['purpose'] ?? 'backup' );
+				}
+			)
+		);
 
-		while ( $item_count > self::RETENTION_LIMIT ) {
+		while ( $backup_count > self::RETENTION_LIMIT ) {
 			$expired_index = null;
 
 			for ( $index = $item_count - 1; $index >= 0; --$index ) {
-				if ( '' === $protected_id || ! hash_equals( (string) $items[ $index ]['id'], $protected_id ) ) {
+				if (
+					'rollback' !== (string) ( $items[ $index ]['purpose'] ?? 'backup' )
+					&& ( '' === $protected_id || ! hash_equals( (string) $items[ $index ]['id'], $protected_id ) )
+				) {
 					$expired_index = $index;
 					break;
 				}
@@ -281,6 +360,7 @@ final class TIM_Backup_Storage {
 			$expired_items[] = $items[ $expired_index ];
 			array_splice( $items, $expired_index, 1 );
 			--$item_count;
+			--$backup_count;
 		}
 
 		update_option( self::INDEX_OPTION, $items, false );

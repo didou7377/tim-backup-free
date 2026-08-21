@@ -20,6 +20,7 @@ unload_textdomain( 'tim-backup-free' );
 if (
 	! load_textdomain( 'tim-backup-free', TIM_BACKUP_DIR . 'languages/tim-backup-free-de_DE.mo' )
 	|| 'Übersicht' !== __( 'Overview', 'tim-backup-free' )
+	|| 'Wartungsarbeiten werden durchgeführt. Die Website ist in Kürze wieder verfügbar.' !== __( 'Maintenance work is in progress. The website will be available again shortly.', 'tim-backup-free' )
 ) {
 	throw new RuntimeException( 'Bundled German translation did not load.' );
 }
@@ -151,10 +152,14 @@ if ( ! $restore_jobs->is_maintenance_active() ) {
 }
 
 $count_before_retry = count( $storage->all() );
-$safety_retry       = $service->create( 'database', (string) $job['backupId'], (string) $job['safetyBackupId'] );
+$rollback_retry     = $service->create( 'database', (string) $job['backupId'], (string) $job['rollbackId'], 'rollback' );
 
-if ( is_wp_error( $safety_retry ) || $count_before_retry !== count( $storage->all() ) ) {
-	throw new RuntimeException( 'Safety backup creation is not idempotent.' );
+if (
+	is_wp_error( $rollback_retry )
+	|| $count_before_retry !== count( $storage->all() )
+	|| count( $storage->all() ) !== count( $storage->backups() ) + 1
+) {
+	throw new RuntimeException( 'Rollback creation is not idempotent.' );
 }
 
 $job = $restore_jobs->cancel();
@@ -165,6 +170,10 @@ if ( is_wp_error( $job ) || 'cancelled' !== (string) $job['status'] ) {
 
 if ( $restore_jobs->is_maintenance_active() ) {
 	throw new RuntimeException( 'Restore maintenance marker was not removed after cancellation.' );
+}
+
+if ( null !== $storage->rollback() ) {
+	throw new RuntimeException( 'Cancelled restore retained an unnecessary rollback.' );
 }
 
 wp_set_current_user( 1 );
@@ -179,6 +188,7 @@ unset( $_GET['view'], $_GET['backup_id'] );
 if (
 	! str_contains( $restore_markup, 'data-tim-restore-assistant' )
 	|| ! str_contains( $restore_markup, 'data-tim-restore-steps' )
+	|| ! str_contains( $restore_markup, 'data-tim-rollback-panel' )
 	|| ! str_contains( $restore_markup, 'value="' . (string) $backups[0]['id'] . '"' )
 ) {
 	throw new RuntimeException( 'Guided restore interface did not render correctly.' );
@@ -199,6 +209,19 @@ foreach ( $backups as $backup ) {
 	if ( is_wp_error( $deleted ) ) {
 		throw new RuntimeException( 'Backup cleanup failed: ' . esc_html( $deleted->get_error_message() ) );
 	}
+}
+
+$_GET['view'] = 'restore';
+ob_start();
+$admin->render_page();
+$empty_restore_markup = (string) ob_get_clean();
+unset( $_GET['view'] );
+
+if (
+	! str_contains( $empty_restore_markup, 'data-tim-rollback-panel' )
+	|| ! str_contains( $empty_restore_markup, 'data-tim-restore-steps' )
+) {
+	throw new RuntimeException( 'Rollback recovery controls disappeared without normal backups.' );
 }
 
 echo "TIM_BACKUP_SMOKE_OK\n";

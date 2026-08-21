@@ -13,6 +13,11 @@ defined( 'ABSPATH' ) || exit;
 final class TIM_Backup_Restore_Job_Service {
 
 	/**
+	 * Cron hook that removes an expired rollback.
+	 */
+	public const ROLLBACK_CLEANUP_HOOK = 'tim_backup_rollback_cleanup';
+
+	/**
 	 * Journal filename below protected storage.
 	 */
 	private const JOURNAL_FILE = 'restore-job.json';
@@ -31,6 +36,11 @@ final class TIM_Backup_Restore_Job_Service {
 	 * Maximum uncompressed database payload per independently verified entry.
 	 */
 	private const MAX_DATABASE_ENTRY_BYTES = 4 * 1024 * 1024;
+
+	/**
+	 * Successful restores retain one rollback for ten days.
+	 */
+	private const ROLLBACK_RETENTION_SECONDS = 10 * DAY_IN_SECONDS;
 
 	/**
 	 * Ordered execution phases.
@@ -122,6 +132,23 @@ final class TIM_Backup_Restore_Job_Service {
 			);
 		}
 
+		if ( is_array( $current ) ) {
+			$current = $this->normalize_rollback( $current );
+
+			if ( is_wp_error( $current ) ) {
+				$this->storage->release_lock( 'restore-job', $job_lock );
+				return $current;
+			}
+
+			if ( $this->job_has_rollback( $current ) ) {
+				$this->storage->release_lock( 'restore-job', $job_lock );
+				return new WP_Error(
+					'tim_backup_rollback_cleanup_required',
+					__( 'Remove or use the existing rollback before starting another restore.', 'tim-backup-free' )
+				);
+			}
+		}
+
 		$backup = $this->storage->find( $backup_id );
 
 		if ( is_wp_error( $backup ) ) {
@@ -129,26 +156,123 @@ final class TIM_Backup_Restore_Job_Service {
 			return $backup;
 		}
 
+		if ( 'rollback' === (string) ( $backup['purpose'] ?? 'backup' ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return new WP_Error(
+				'tim_backup_restore_source_invalid',
+				__( 'Use the dedicated rollback action for this archive.', 'tim-backup-free' )
+			);
+		}
+
 		$job_id = bin2hex( random_bytes( 16 ) );
 		$job    = array(
-			'job_id'         => $job_id,
-			'backup_id'      => $backup_id,
-			'backup_type'    => (string) ( $backup['type'] ?? 'database' ),
-			'backup_created' => (int) ( $backup['created_at'] ?? 0 ),
-			'user_id'        => $user_id,
-			'status'         => 'active',
-			'phase'          => 'verify',
-			'created_at'     => time(),
-			'updated_at'     => time(),
-			'entries'        => array(),
-			'extract_index'  => 0,
-			'backup_index'   => array(),
-			'restore_state'  => array(),
-			'error'          => '',
+			'job_id'              => $job_id,
+			'backup_id'           => $backup_id,
+			'backup_type'         => (string) ( $backup['type'] ?? 'database' ),
+			'backup_created'      => (int) ( $backup['created_at'] ?? 0 ),
+			'user_id'             => $user_id,
+			'status'              => 'active',
+			'phase'               => 'verify',
+			'created_at'          => time(),
+			'updated_at'          => time(),
+			'entries'             => array(),
+			'extract_index'       => 0,
+			'backup_index'        => array(),
+			'restore_state'       => array(),
+			'is_rollback'         => false,
+			'rollback_id'         => '',
+			'rollback_created_at' => 0,
+			'rollback_expires_at' => 0,
+			'error'               => '',
 		);
 
 		$this->remove_workspace_for_job( $job_id );
 
+		$saved = $this->save( $job );
+		$this->storage->release_lock( 'restore-job', $job_lock );
+
+		return is_wp_error( $saved ) ? $saved : $this->public_status( $job );
+	}
+
+	/**
+	 * Starts an emergency restore from the retained rollback artifact.
+	 *
+	 * A rollback does not create another rollback.
+	 *
+	 * @param int $user_id Initiating administrator.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public function start_rollback( int $user_id ) {
+		$ready = $this->storage->ensure_directory();
+
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+
+		$job_lock = $this->storage->acquire_lock( 'restore-job' );
+
+		if ( is_wp_error( $job_lock ) ) {
+			return $job_lock;
+		}
+
+		$current = $this->load();
+
+		if ( is_wp_error( $current ) || ! is_array( $current ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return is_wp_error( $current )
+				? $current
+				: new WP_Error( 'tim_backup_rollback_missing', __( 'No rollback is available.', 'tim-backup-free' ) );
+		}
+
+		$current = $this->normalize_rollback( $current );
+
+		if ( is_wp_error( $current ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $current;
+		}
+
+		if (
+			! $this->job_has_rollback( $current )
+			|| ! in_array( (string) ( $current['status'] ?? '' ), array( 'completed', 'cancelled' ), true )
+		) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return new WP_Error(
+				'tim_backup_rollback_unavailable',
+				__( 'The rollback cannot be started in the current restore state.', 'tim-backup-free' )
+			);
+		}
+
+		$rollback_id = (string) $current['rollback_id'];
+		$rollback    = $this->storage->find( $rollback_id );
+
+		if ( is_wp_error( $rollback ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $rollback;
+		}
+
+		$job_id = bin2hex( random_bytes( 16 ) );
+		$job    = array(
+			'job_id'              => $job_id,
+			'backup_id'           => $rollback_id,
+			'backup_type'         => 'database',
+			'backup_created'      => (int) ( $rollback['created_at'] ?? 0 ),
+			'user_id'             => $user_id,
+			'status'              => 'active',
+			'phase'               => 'verify',
+			'created_at'          => time(),
+			'updated_at'          => time(),
+			'entries'             => array(),
+			'extract_index'       => 0,
+			'backup_index'        => $this->storage->all(),
+			'restore_state'       => array(),
+			'is_rollback'         => true,
+			'rollback_id'         => $rollback_id,
+			'rollback_created_at' => (int) $current['rollback_created_at'],
+			'rollback_expires_at' => (int) $current['rollback_expires_at'],
+			'error'               => '',
+		);
+
+		$this->remove_workspace_for_job( $job_id );
 		$saved = $this->save( $job );
 		$this->storage->release_lock( 'restore-job', $job_lock );
 
@@ -273,7 +397,52 @@ final class TIM_Backup_Restore_Job_Service {
 			);
 		}
 
+		$job = $this->normalize_rollback( $job );
+
+		if ( is_wp_error( $job ) ) {
+			return $job;
+		}
+
 		return $this->public_status( $job );
+	}
+
+	/**
+	 * Returns the current rollback metadata without exposing it as a backup.
+	 *
+	 * @return array<string, mixed>|WP_Error|null
+	 */
+	public function rollback_status() {
+		$job = $this->load();
+
+		if ( is_wp_error( $job ) || ! is_array( $job ) ) {
+			return is_wp_error( $job ) ? $job : null;
+		}
+
+		$job = $this->normalize_rollback( $job );
+
+		if ( is_wp_error( $job ) ) {
+			return $job;
+		}
+
+		return $this->public_rollback( $job );
+	}
+
+	/**
+	 * Deletes the retained rollback after explicit administrator confirmation.
+	 *
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public function delete_rollback() {
+		return $this->cleanup_rollback( true );
+	}
+
+	/**
+	 * Removes an expired rollback when WordPress Cron or a later request runs.
+	 *
+	 * @return void
+	 */
+	public function cleanup_expired_rollback(): void {
+		$this->cleanup_rollback( false );
 	}
 
 	/**
@@ -344,6 +513,20 @@ final class TIM_Backup_Restore_Job_Service {
 			$this->storage->release_lock( 'operation', $lock );
 			$this->storage->release_lock( 'restore-job', $job_lock );
 			return $maintenance;
+		}
+
+		if ( empty( $job['is_rollback'] ) && ! empty( $job['rollback_id'] ) ) {
+			$deleted = $this->storage->delete( (string) $job['rollback_id'] );
+
+			if ( is_wp_error( $deleted ) && 'tim_backup_not_found' !== $deleted->get_error_code() ) {
+				$this->storage->release_lock( 'operation', $lock );
+				$this->storage->release_lock( 'restore-job', $job_lock );
+				return $deleted;
+			}
+
+			$job['rollback_id']         = '';
+			$job['rollback_created_at'] = 0;
+			$job['rollback_expires_at'] = 0;
 		}
 
 		$this->storage->release_lock( 'operation', $lock );
@@ -448,14 +631,21 @@ final class TIM_Backup_Restore_Job_Service {
 			return $maintenance;
 		}
 
-		$job['safety_backup_id'] = $this->storage->create_id();
-		$job['phase']         = 'safety';
+		if ( ! empty( $job['is_rollback'] ) ) {
+			$job['phase'] = 'extract';
+			return $job;
+		}
+
+		$job['rollback_id']         = $this->storage->create_id();
+		$job['rollback_created_at'] = time();
+		$job['rollback_expires_at'] = 0;
+		$job['phase']               = 'safety';
 
 		return $job;
 	}
 
 	/**
-	 * Creates a database-only safety backup.
+	 * Creates a database-only rollback artifact.
 	 *
 	 * @param array<string, mixed> $job Job.
 	 * @return array<string, mixed>|WP_Error
@@ -469,24 +659,25 @@ final class TIM_Backup_Restore_Job_Service {
 			return $job;
 		}
 
-		$safety_id = (string) ( $job['safety_backup_id'] ?? '' );
-		$safety    = $this->backups->create( 'database', (string) $job['backup_id'], $safety_id );
+		$rollback_id = (string) ( $job['rollback_id'] ?? '' );
+		$rollback    = $this->backups->create( 'database', (string) $job['backup_id'], $rollback_id, 'rollback' );
 		$this->storage->release_lock( 'restore-traffic', $traffic_lock );
 
-		if ( is_wp_error( $safety ) ) {
+		if ( is_wp_error( $rollback ) ) {
 			return new WP_Error(
-				'tim_backup_restore_safety_failed',
+				'tim_backup_restore_rollback_failed',
 				sprintf(
-					/* translators: %s: Backup error message. */
-					__( 'Restore cancelled because the database safety backup failed: %s', 'tim-backup-free' ),
-					$safety->get_error_message()
+					/* translators: %s: Rollback creation error message. */
+					__( 'Restore cancelled because the rollback could not be created: %s', 'tim-backup-free' ),
+					$rollback->get_error_message()
 				)
 			);
 		}
 
-		$job['safety_backup_id'] = (string) $safety['id'];
-		$job['backup_index']     = $this->storage->all();
-		$job['phase']            = 'extract';
+		$job['rollback_id']         = (string) $rollback['id'];
+		$job['rollback_created_at'] = (int) $rollback['created_at'];
+		$job['backup_index']        = $this->storage->all();
+		$job['phase']               = 'extract';
 
 		return $job;
 	}
@@ -828,9 +1019,36 @@ final class TIM_Backup_Restore_Job_Service {
 			return $maintenance;
 		}
 
-		$job['phase']  = 'complete';
-		$job['status'] = 'completed';
-		$job['error']  = '';
+		if ( ! empty( $job['is_rollback'] ) ) {
+			$rollback_id = (string) ( $job['rollback_id'] ?? '' );
+			$deleted     = '' === $rollback_id ? true : $this->storage->delete( $rollback_id );
+
+			if ( is_wp_error( $deleted ) && 'tim_backup_not_found' !== $deleted->get_error_code() ) {
+				return $deleted;
+			}
+
+			$job['backup_index']        = array_values(
+				array_filter(
+					(array) ( $job['backup_index'] ?? array() ),
+					static function ( array $item ) use ( $rollback_id ): bool {
+						return ! hash_equals( (string) ( $item['id'] ?? '' ), $rollback_id );
+					}
+				)
+			);
+			$job['rollback_id']         = '';
+			$job['rollback_created_at'] = 0;
+			$job['rollback_expires_at'] = 0;
+			wp_clear_scheduled_hook( self::ROLLBACK_CLEANUP_HOOK );
+		} else {
+			$job['rollback_expires_at'] = time() + self::ROLLBACK_RETENTION_SECONDS;
+			wp_clear_scheduled_hook( self::ROLLBACK_CLEANUP_HOOK );
+			wp_schedule_single_event( (int) $job['rollback_expires_at'], self::ROLLBACK_CLEANUP_HOOK );
+		}
+
+		$job['phase']        = 'complete';
+		$job['status']       = 'completed';
+		$job['completed_at'] = time();
+		$job['error']        = '';
 
 		return $job;
 	}
@@ -1040,6 +1258,213 @@ final class TIM_Backup_Restore_Job_Service {
 	}
 
 	/**
+	 * Removes a retained rollback when explicitly requested or expired.
+	 *
+	 * @param bool $force Whether an administrator explicitly requested deletion.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private function cleanup_rollback( bool $force ) {
+		$job_lock = $this->storage->acquire_lock( 'restore-job' );
+
+		if ( is_wp_error( $job_lock ) ) {
+			return $job_lock;
+		}
+
+		$job = $this->load();
+
+		if ( is_wp_error( $job ) || ! is_array( $job ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return is_wp_error( $job )
+				? $job
+				: new WP_Error( 'tim_backup_rollback_missing', __( 'No rollback is available.', 'tim-backup-free' ) );
+		}
+
+		$job = $this->normalize_rollback( $job );
+
+		if ( is_wp_error( $job ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $job;
+		}
+
+		if ( ! $this->job_has_rollback( $job ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $this->public_status( $job );
+		}
+
+		$status = (string) ( $job['status'] ?? '' );
+		$expiry = (int) ( $job['rollback_expires_at'] ?? 0 );
+
+		if ( in_array( $status, array( 'active', 'error' ), true ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $force
+				? new WP_Error(
+					'tim_backup_rollback_cleanup_unsafe',
+					__( 'The rollback cannot be removed while restore recovery is still required.', 'tim-backup-free' )
+				)
+				: $this->public_status( $job );
+		}
+
+		if ( ! $force && ( 0 === $expiry || time() < $expiry ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $this->public_status( $job );
+		}
+
+		$operation_lock = $this->storage->acquire_lock( 'operation' );
+
+		if ( is_wp_error( $operation_lock ) ) {
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $operation_lock;
+		}
+
+		$rollback_id = (string) $job['rollback_id'];
+		$deleted     = $this->storage->delete( $rollback_id );
+
+		if ( is_wp_error( $deleted ) && 'tim_backup_not_found' !== $deleted->get_error_code() ) {
+			$this->storage->release_lock( 'operation', $operation_lock );
+			$this->storage->release_lock( 'restore-job', $job_lock );
+			return $deleted;
+		}
+
+		$this->storage->release_lock( 'operation', $operation_lock );
+		$job['backup_index'] = array_values(
+			array_filter(
+				(array) ( $job['backup_index'] ?? array() ),
+				static function ( array $item ) use ( $rollback_id ): bool {
+					return ! hash_equals( (string) ( $item['id'] ?? '' ), $rollback_id );
+				}
+			)
+		);
+		$job['rollback_id']         = '';
+		$job['rollback_created_at'] = 0;
+		$job['rollback_expires_at'] = 0;
+		$job['safety_backup_id']    = '';
+		$job['updated_at']          = time();
+		$saved                      = $this->save( $job );
+		$this->storage->release_lock( 'restore-job', $job_lock );
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		wp_clear_scheduled_hook( self::ROLLBACK_CLEANUP_HOOK );
+
+		return $this->public_status( $job );
+	}
+
+	/**
+	 * Migrates legacy safety-backup journal fields to rollback metadata.
+	 *
+	 * @param array<string, mixed> $job Job.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private function normalize_rollback( array $job ) {
+		$rollback_id = (string) ( $job['rollback_id'] ?? $job['safety_backup_id'] ?? '' );
+
+		if ( '' === $rollback_id ) {
+			return $job;
+		}
+
+		$rollback = $this->storage->find( $rollback_id );
+
+		if ( is_wp_error( $rollback ) ) {
+			if ( 'active' === (string) ( $job['status'] ?? '' ) ) {
+				return $job;
+			}
+
+			$job['rollback_id']         = '';
+			$job['rollback_created_at'] = 0;
+			$job['rollback_expires_at'] = 0;
+			return $job;
+		}
+
+		if ( 'rollback' !== (string) ( $rollback['purpose'] ?? 'backup' ) ) {
+			$marked = $this->storage->set_purpose( $rollback_id, 'rollback' );
+
+			if ( is_wp_error( $marked ) ) {
+				return $marked;
+			}
+		}
+
+		$created = (int) ( $job['rollback_created_at'] ?? $rollback['created_at'] ?? 0 );
+		$expiry  = (int) ( $job['rollback_expires_at'] ?? 0 );
+
+		if ( 0 === $expiry && 'completed' === (string) ( $job['status'] ?? '' ) ) {
+			$expiry = max( $created, (int) ( $job['updated_at'] ?? 0 ) ) + self::ROLLBACK_RETENTION_SECONDS;
+		}
+
+		$job['rollback_id']         = $rollback_id;
+		$job['rollback_created_at'] = $created;
+		$job['rollback_expires_at'] = $expiry;
+
+		foreach ( (array) ( $job['backup_index'] ?? array() ) as &$item ) {
+			if ( is_array( $item ) && hash_equals( (string) ( $item['id'] ?? '' ), $rollback_id ) ) {
+				$item['purpose'] = 'rollback';
+			}
+		}
+		unset( $item );
+
+		return $job;
+	}
+
+	/**
+	 * Whether the journal references an existing rollback archive.
+	 *
+	 * @param array<string, mixed> $job Job.
+	 * @return bool
+	 */
+	private function job_has_rollback( array $job ): bool {
+		$rollback_id = (string) ( $job['rollback_id'] ?? '' );
+
+		return '' !== $rollback_id && ! is_wp_error( $this->storage->find( $rollback_id ) );
+	}
+
+	/**
+	 * Returns browser-safe rollback metadata.
+	 *
+	 * @param array<string, mixed> $job Job.
+	 * @return array<string, mixed>|null
+	 */
+	private function public_rollback( array $job ): ?array {
+		if ( ! $this->job_has_rollback( $job ) ) {
+			return null;
+		}
+
+		$rollback = $this->storage->find( (string) $job['rollback_id'] );
+
+		if ( is_wp_error( $rollback ) ) {
+			return null;
+		}
+
+		$status       = (string) ( $job['status'] ?? '' );
+		$expiry       = (int) ( $job['rollback_expires_at'] ?? 0 );
+		$size         = (int) ( $rollback['size'] ?? 0 );
+		$expiry_label = 0 < $expiry ? wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $expiry ) : '';
+
+		return array(
+			'id'           => (string) $rollback['id'],
+			'createdAt'    => (int) ( $job['rollback_created_at'] ?? $rollback['created_at'] ?? 0 ),
+			'expiresAt'    => $expiry,
+			'expiresLabel' => $expiry_label,
+			'size'         => $size,
+			'sizeLabel'    => size_format( $size, 1 ),
+			'details'      => 0 < $expiry
+				? sprintf(
+					/* translators: 1: Rollback size, 2: Automatic deletion date. */
+					__( 'Rollback size: %1$s. Automatic cleanup: %2$s.', 'tim-backup-free' ),
+					size_format( $size, 1 ),
+					$expiry_label
+				)
+				: sprintf(
+					/* translators: %s: Rollback size. */
+					__( 'Rollback size: %s. It is retained until recovery is complete.', 'tim-backup-free' ),
+					size_format( $size, 1 )
+				),
+			'canRun'       => in_array( $status, array( 'completed', 'cancelled' ), true ),
+			'canDelete'    => ! in_array( $status, array( 'active', 'error' ), true ),
+		);
+	}
+
+	/**
 	 * Loads and authenticates the journal.
 	 *
 	 * @return array<string, mixed>|WP_Error|null
@@ -1132,7 +1557,7 @@ final class TIM_Backup_Restore_Job_Service {
 		$state        = isset( $job['restore_state'] ) && is_array( $job['restore_state'] ) ? $job['restore_state'] : array();
 		$phase_labels = array(
 			'verify'  => __( 'Verify backup archive', 'tim-backup-free' ),
-			'safety'  => __( 'Create current database safety backup', 'tim-backup-free' ),
+			'safety'  => __( 'Create rollback', 'tim-backup-free' ),
 			'extract' => __( 'Prepare verified database files', 'tim-backup-free' ),
 			'prepare' => __( 'Create temporary database tables', 'tim-backup-free' ),
 			'import'  => __( 'Restore database data', 'tim-backup-free' ),
@@ -1168,7 +1593,15 @@ final class TIM_Backup_Restore_Job_Service {
 			'steps'          => $steps,
 			'error'          => (string) ( $job['error'] ?? '' ),
 			'message'        => 'completed' === $status
-				? __( 'The database was restored successfully. The database safety backup was retained.', 'tim-backup-free' )
+				? (
+					! empty( $job['is_rollback'] )
+						? __( 'The rollback was completed successfully.', 'tim-backup-free' )
+						: (
+							$this->job_has_rollback( $job )
+								? __( 'The database was restored successfully. The rollback will be retained for ten days.', 'tim-backup-free' )
+								: __( 'The database was restored successfully. The rollback has been removed.', 'tim-backup-free' )
+						)
+				)
 				: '',
 			'rowsImported'   => (int) ( $state['rows_imported'] ?? 0 ),
 			'tableCurrent'   => min( (int) ( $state['import_index'] ?? 0 ) + 1, count( (array) ( $state['tables'] ?? array() ) ) ),
@@ -1180,12 +1613,14 @@ final class TIM_Backup_Restore_Job_Service {
 				&& ( 'swap' !== $phase || 'error' === $status )
 			),
 			'canRetry'       => 'error' === $status && ( ! empty( $state['swapped'] ) || 'cleanup' === $phase ),
-			'safetyBackupId' => (string) ( $job['safety_backup_id'] ?? '' ),
+			'isRollback'     => ! empty( $job['is_rollback'] ),
+			'rollback'       => $this->public_rollback( $job ),
+			'rollbackId'     => (string) ( $job['rollback_id'] ?? '' ),
 		);
 	}
 
 	/**
-	 * Enables filesystem-backed maintenance mode before the safety snapshot.
+	 * Enables filesystem-backed maintenance mode before the rollback snapshot.
 	 *
 	 * @param array<string, mixed> $job Job.
 	 * @return true|WP_Error

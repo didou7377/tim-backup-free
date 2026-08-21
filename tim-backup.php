@@ -3,7 +3,7 @@
  * Plugin Name:       TIM Backup
  * Plugin URI:        https://github.com/didou7377/tim-backup-free
  * Description:       Create, verify, download, and manage secure local WordPress backups.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            TIM Plugins
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TIM_BACKUP_VERSION', '0.2.0' );
+define( 'TIM_BACKUP_VERSION', '0.3.0' );
 define( 'TIM_BACKUP_FILE', __FILE__ );
 define( 'TIM_BACKUP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TIM_BACKUP_URL', plugin_dir_url( __FILE__ ) );
