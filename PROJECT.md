@@ -161,7 +161,7 @@ changes require explicit backwards-compatibility handling.
   rollback mechanism has dedicated integration coverage.
 - Full backups need tests on large sites and constrained shared hosting.
 - WooCommerce and HPOS backup/restore require dedicated integration fixtures.
-- WordPress Coding Standards fixes from the first CI run are pending verification.
+- WordPress Coding Standards and translation validation pass in GitHub Actions.
 - The administration interface needs browser, keyboard and screen-reader review.
 - WordPress.org assets and screenshots have not been prepared.
 
