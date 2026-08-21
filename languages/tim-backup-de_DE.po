@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: TIM Backup 0.1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/didou7377/tim-backup-free/security\n"
-"POT-Creation-Date: 2026-08-20 09:58+0200\n"
+"Project-Id-Version: TIM Backup 0.2.0\n"
+"Report-Msgid-Bugs-To: https://github.com/didou7377/tim-backup-free/issues\n"
+"POT-Creation-Date: 2026-08-21 18:46+0200\n"
 "PO-Revision-Date: 2026-08-20 09:40+0200\n"
 "Last-Translator: TIM Plugins\n"
 "Language-Team: German\n"
@@ -13,13 +13,909 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: TIM Backup\n"
 
+#: includes/class-tim-backup-admin.php:64
+#: includes/class-tim-backup-admin.php:65
+#: includes/class-tim-backup-admin.php:149
+msgid "TIM Backup"
+msgstr "TIM Backup"
+
+#: includes/class-tim-backup-admin.php:113
+msgid ""
+"The restore request failed. You can safely reopen this page to continue."
+msgstr ""
+"Die Wiederherstellungsanfrage ist fehlgeschlagen. Du kannst diese Seite "
+"gefahrlos erneut öffnen, um fortzufahren."
+
+#: includes/class-tim-backup-admin.php:114
+msgid "Cancel this restore and remove all prepared temporary database tables?"
+msgstr ""
+"Diese Wiederherstellung abbrechen und alle vorbereiteten temporären "
+"Datenbanktabellen entfernen?"
+
+#: includes/class-tim-backup-admin.php:115
+msgid "Restore in progress. Do not close this page unless necessary."
+msgstr ""
+"Die Wiederherstellung läuft. Schließe diese Seite nur, wenn es notwendig ist."
+
+#: includes/class-tim-backup-admin.php:116
+msgid "rows"
+msgstr "Zeilen"
+
+#: includes/class-tim-backup-admin.php:133
+msgid "Overview"
+msgstr "Übersicht"
+
+#: includes/class-tim-backup-admin.php:134
+msgid "Backups"
+msgstr "Backups"
+
+#: includes/class-tim-backup-admin.php:135
+msgid "System"
+msgstr "System"
+
+#: includes/class-tim-backup-admin.php:148
+msgid "TIM Plugin Series"
+msgstr "TIM-Plugin-Serie"
+
+#: includes/class-tim-backup-admin.php:150
+msgid "Secure local backups with verification before you need them."
+msgstr "Sichere lokale Backups mit Prüfung, bevor du sie benötigst."
+
+#. translators: %s: Plugin version.
+#: includes/class-tim-backup-admin.php:156
+#, php-format
+msgid "Version %s"
+msgstr "Version %s"
+
+#: includes/class-tim-backup-admin.php:171
+msgid "TIM Backup sections"
+msgstr "TIM-Backup-Bereiche"
+
+#: includes/class-tim-backup-admin.php:231
+msgid "Back to backup management"
+msgstr "Zurück zur Backup-Verwaltung"
+
+#: includes/class-tim-backup-admin.php:236
+msgid "Guided restore"
+msgstr "Geführte Wiederherstellung"
+
+#: includes/class-tim-backup-admin.php:237
+msgid "Restore a database safely"
+msgstr "Eine Datenbank sicher wiederherstellen"
+
+#: includes/class-tim-backup-admin.php:238
+msgid ""
+"TIM Backup verifies the selected archive, creates a current database safety "
+"backup, prepares temporary tables, and activates them only after every row "
+"was imported successfully."
+msgstr ""
+"TIM Backup prüft das ausgewählte Archiv, erstellt ein aktuelles Datenbank-"
+"Sicherheitsbackup, bereitet temporäre Tabellen vor und aktiviert sie erst, "
+"nachdem jede Zeile erfolgreich importiert wurde."
+
+#: includes/class-tim-backup-admin.php:243
+msgid "No backup is available"
+msgstr "Kein Backup verfügbar"
+
+#: includes/class-tim-backup-admin.php:244
+msgid "Create a database or full backup before opening the restore assistant."
+msgstr ""
+"Erstelle ein Datenbank- oder vollständiges Backup, bevor du den "
+"Wiederherstellungsassistenten öffnest."
+
+#: includes/class-tim-backup-admin.php:249
+msgid "1. Select backup"
+msgstr "1. Backup auswählen"
+
+#: includes/class-tim-backup-admin.php:250
+msgid "Backup archive"
+msgstr "Backup-Archiv"
+
+#: includes/class-tim-backup-admin.php:255
+#: includes/class-tim-backup-admin.php:460
+#: includes/class-tim-backup-admin.php:491
+msgid "Full backup"
+msgstr "Vollständiges Backup"
+
+#: includes/class-tim-backup-admin.php:255
+#: includes/class-tim-backup-admin.php:460
+#: includes/class-tim-backup-admin.php:491
+msgid "Database backup"
+msgstr "Datenbank-Backup"
+
+#. translators: 1: Backup type, 2: Date, 3: Size.
+#: includes/class-tim-backup-admin.php:258
+#, php-format
+msgid "%1$s — %2$s — %3$s"
+msgstr "%1$s — %2$s — %3$s"
+
+#: includes/class-tim-backup-admin.php:272
+msgid "Current database data will be replaced."
+msgstr "Aktuelle Datenbankdaten werden ersetzt."
+
+#: includes/class-tim-backup-admin.php:272
+msgid ""
+"Website files are not restored. A database safety backup is created first."
+msgstr ""
+"Website-Dateien werden nicht wiederhergestellt. Zuerst wird ein Datenbank-"
+"Sicherheitsbackup erstellt."
+
+#: includes/class-tim-backup-admin.php:277
+msgid "I understand and want to start the guided database restore."
+msgstr ""
+"Ich habe dies verstanden und möchte die geführte Datenbankwiederherstellung "
+"starten."
+
+#: includes/class-tim-backup-admin.php:281
+msgid "Start database restore"
+msgstr "Datenbankwiederherstellung starten"
+
+#: includes/class-tim-backup-admin.php:286
+msgid "2. Restore progress"
+msgstr "2. Fortschritt der Wiederherstellung"
+
+#: includes/class-tim-backup-admin.php:290
+#: includes/class-tim-backup-restore-job-service.php:1134
+msgid "Verify backup archive"
+msgstr "Backup-Archiv prüfen"
+
+#: includes/class-tim-backup-admin.php:291
+#: includes/class-tim-backup-restore-job-service.php:1135
+msgid "Create current database safety backup"
+msgstr "Aktuelles Datenbank-Sicherheitsbackup erstellen"
+
+#: includes/class-tim-backup-admin.php:292
+#: includes/class-tim-backup-restore-job-service.php:1136
+msgid "Prepare verified database files"
+msgstr "Geprüfte Datenbankdateien vorbereiten"
+
+#: includes/class-tim-backup-admin.php:293
+#: includes/class-tim-backup-restore-job-service.php:1137
+msgid "Create temporary database tables"
+msgstr "Temporäre Datenbanktabellen erstellen"
+
+#: includes/class-tim-backup-admin.php:294
+#: includes/class-tim-backup-restore-job-service.php:1138
+msgid "Restore database data"
+msgstr "Datenbankdaten wiederherstellen"
+
+#: includes/class-tim-backup-admin.php:295
+#: includes/class-tim-backup-restore-job-service.php:1139
+msgid "Activate restored database atomically"
+msgstr "Wiederhergestellte Datenbank atomar aktivieren"
+
+#: includes/class-tim-backup-admin.php:296
+#: includes/class-tim-backup-restore-job-service.php:1140
+msgid "Clean up and refresh WordPress"
+msgstr "Aufräumen und WordPress aktualisieren"
+
+#: includes/class-tim-backup-admin.php:297
+#: includes/class-tim-backup-restore-job-service.php:1141
+msgid "Restore complete"
+msgstr "Wiederherstellung abgeschlossen"
+
+#: includes/class-tim-backup-admin.php:308
+msgid "Select a backup to begin."
+msgstr "Wähle ein Backup aus, um zu beginnen."
+
+#: includes/class-tim-backup-admin.php:311
+msgid "Retry final cleanup"
+msgstr "Abschließendes Aufräumen wiederholen"
+
+#: includes/class-tim-backup-admin.php:314
+msgid "Cancel restore"
+msgstr "Wiederherstellung abbrechen"
+
+#: includes/class-tim-backup-admin.php:342
+msgid "Backup status"
+msgstr "Backup-Status"
+
+#: includes/class-tim-backup-admin.php:344
+msgid "Protected locally"
+msgstr "Lokal geschützt"
+
+#. translators: %s: Human-readable backup date.
+#: includes/class-tim-backup-admin.php:349
+#, php-format
+msgid "Latest verified backup: %s"
+msgstr "Letztes geprüftes Backup: %s"
+
+#: includes/class-tim-backup-admin.php:355
+msgid "Create your first backup"
+msgstr "Erstelle dein erstes Backup"
+
+#: includes/class-tim-backup-admin.php:356
+msgid "No managed backup is available yet."
+msgstr "Es ist noch kein verwaltetes Backup verfügbar."
+
+#: includes/class-tim-backup-admin.php:359
+msgid "Manage backups"
+msgstr "Backups verwalten"
+
+#: includes/class-tim-backup-admin.php:364
+msgid "Weekly automation"
+msgstr "Wöchentliche Automatisierung"
+
+#: includes/class-tim-backup-admin.php:365
+msgid "Full site backup"
+msgstr "Vollständiges Website-Backup"
+
+#. translators: %s: Date of next scheduled backup.
+#: includes/class-tim-backup-admin.php:371
+#, php-format
+msgid "Next run: %s"
+msgstr "Nächste Ausführung: %s"
+
+#: includes/class-tim-backup-admin.php:375
+msgid "The weekly event is not currently scheduled."
+msgstr "Das wöchentliche Ereignis ist derzeit nicht geplant."
+
+#: includes/class-tim-backup-admin.php:379
+msgid "WordPress Cron runs when the site receives traffic."
+msgstr "WordPress Cron wird ausgeführt, wenn die Website Zugriffe erhält."
+
+#: includes/class-tim-backup-admin.php:383
+msgid "Local retention"
+msgstr "Lokale Aufbewahrung"
+
+#. translators: 1: Current backup count, 2: Maximum backup count.
+#: includes/class-tim-backup-admin.php:388
+#, php-format
+msgid "%1$d of %2$d backups"
+msgstr "%1$d von %2$d Backups"
+
+#: includes/class-tim-backup-admin.php:394
+msgid ""
+"After a successful fourth backup, the oldest managed archive is removed."
+msgstr ""
+"Nach einem erfolgreichen vierten Backup wird das älteste verwaltete Archiv "
+"entfernt."
+
+#: includes/class-tim-backup-admin.php:399
+msgid "Security by default"
+msgstr "Sicherheit als Standard"
+
+#: includes/class-tim-backup-admin.php:401
+msgid "Archives use random names and protected local storage."
+msgstr ""
+"Archive verwenden zufällige Namen und einen geschützten lokalen Speicher."
+
+#: includes/class-tim-backup-admin.php:402
+msgid "Every payload file is checked with SHA-256."
+msgstr "Jede Nutzdatendatei wird mit SHA-256 geprüft."
+
+#: includes/class-tim-backup-admin.php:403
+msgid "A site-bound signature is verified before restore."
+msgstr ""
+"Vor der Wiederherstellung wird eine an die Website gebundene Signatur "
+"geprüft."
+
+#: includes/class-tim-backup-admin.php:404
+msgid ""
+"Downloads and changes require administrator permission and request "
+"verification."
+msgstr ""
+"Downloads und Änderungen erfordern Administratorrechte und eine "
+"Anfrageprüfung."
+
+#: includes/class-tim-backup-admin.php:426
+msgid "Protected archives"
+msgstr "Geschützte Archive"
+
+#: includes/class-tim-backup-admin.php:427
+msgid "Local backups"
+msgstr "Lokale Backups"
+
+#: includes/class-tim-backup-admin.php:429
+msgid "Maximum: 3"
+msgstr "Maximum: 3"
+
+#: includes/class-tim-backup-admin.php:435
+msgid "No backups yet"
+msgstr "Noch keine Backups"
+
+#: includes/class-tim-backup-admin.php:436
+msgid "Create a full or database backup above."
+msgstr "Erstelle oben ein vollständiges oder ein Datenbank-Backup."
+
+#: includes/class-tim-backup-admin.php:465
+msgid "Back up the database and regular files below the WordPress root."
+msgstr ""
+"Sichert die Datenbank und reguläre Dateien unterhalb des WordPress-"
+"Stammverzeichnisses."
+
+#: includes/class-tim-backup-admin.php:466
+msgid ""
+"Back up all current-site database tables, including WooCommerce HPOS tables."
+msgstr ""
+"Sichert alle Datenbanktabellen der aktuellen Website einschließlich "
+"WooCommerce-HPOS-Tabellen."
+
+#: includes/class-tim-backup-admin.php:475
+msgid "Create and verify"
+msgstr "Erstellen und prüfen"
+
+#. translators: %s: Backup duration in seconds.
+#: includes/class-tim-backup-admin.php:514
+#, php-format
+msgid "%s seconds"
+msgstr "%s Sekunden"
+
+#: includes/class-tim-backup-admin.php:524
+msgid "Verified at creation"
+msgstr "Bei Erstellung geprüft"
+
+#: includes/class-tim-backup-admin.php:525
+msgid "Archive changed"
+msgstr "Archiv verändert"
+
+#: includes/class-tim-backup-admin.php:536
+msgid "Download"
+msgstr "Herunterladen"
+
+#: includes/class-tim-backup-admin.php:540
+msgid "Restore database only"
+msgstr "Nur Datenbank wiederherstellen"
+
+#: includes/class-tim-backup-admin.php:540
+msgid "Restore database"
+msgstr "Datenbank wiederherstellen"
+
+#: includes/class-tim-backup-admin.php:544
+msgid "Delete"
+msgstr "Löschen"
+
+#: includes/class-tim-backup-admin.php:549
+msgid "Permanently delete this backup?"
+msgstr "Dieses Backup dauerhaft löschen?"
+
+#: includes/class-tim-backup-admin.php:552
+msgid "I understand that this archive cannot be recovered."
+msgstr ""
+"Ich habe verstanden, dass dieses Archiv nicht wiederhergestellt werden kann."
+
+#: includes/class-tim-backup-admin.php:554
+msgid "Delete permanently"
+msgstr "Dauerhaft löschen"
+
+#: includes/class-tim-backup-admin.php:570
+msgid "PHP 8.1 or newer"
+msgstr "PHP 8.1 oder neuer"
+
+#: includes/class-tim-backup-admin.php:571
+msgid "PHP ZIP extension"
+msgstr "PHP-ZIP-Erweiterung"
+
+#: includes/class-tim-backup-admin.php:572
+msgid "Writable backup storage"
+msgstr "Beschreibbarer Backup-Speicher"
+
+#: includes/class-tim-backup-admin.php:573
+msgid "Single-site WordPress"
+msgstr "WordPress-Einzelinstallation"
+
+#: includes/class-tim-backup-admin.php:578
+msgid "Environment"
+msgstr "Umgebung"
+
+#: includes/class-tim-backup-admin.php:579
+msgid "System checks"
+msgstr "Systemprüfungen"
+
+#: includes/class-tim-backup-admin.php:585
+msgid "Ready"
+msgstr "Bereit"
+
+#: includes/class-tim-backup-admin.php:585
+msgid "Action needed"
+msgstr "Handlung erforderlich"
+
+#: includes/class-tim-backup-admin.php:592
+msgid "Privacy"
+msgstr "Datenschutz"
+
+#: includes/class-tim-backup-admin.php:593
+msgid "Local by design"
+msgstr "Bewusst lokal"
+
+#: includes/class-tim-backup-admin.php:594
+msgid ""
+"TIM Backup Free does not create an account, track usage, or contact an "
+"external service."
+msgstr ""
+"TIM Backup Free erstellt kein Konto, erfasst keine Nutzung und kontaktiert "
+"keinen externen Dienst."
+
+#: includes/class-tim-backup-admin.php:595
+msgid ""
+"Backup archives remain on this WordPress server until an administrator "
+"downloads or deletes them."
+msgstr ""
+"Backup-Archive bleiben auf diesem WordPress-Server, bis ein Administrator "
+"sie herunterlädt oder löscht."
+
+#: includes/class-tim-backup-backup-service.php:58
+msgid "The requested backup type is invalid."
+msgstr "Der angeforderte Backup-Typ ist ungültig."
+
+#: includes/class-tim-backup-backup-service.php:65
+msgid "The PHP ZIP extension is required to create backups."
+msgstr "Die PHP-ZIP-Erweiterung wird zum Erstellen von Backups benötigt."
+
+#: includes/class-tim-backup-backup-service.php:110
+#: includes/class-tim-backup-backup-service.php:166
+msgid "The completed backup archive could not be hashed."
+msgstr "Für das fertige Backup-Archiv konnte kein Hash erstellt werden."
+
+#: includes/class-tim-backup-backup-service.php:144
+msgid "The completed backup archive could not be finalized."
+msgstr "Das abgeschlossene Backup-Archiv konnte nicht finalisiert werden."
+
+#: includes/class-tim-backup-backup-service.php:205
+msgid "The backup archive does not exist."
+msgstr "Das Backup-Archiv existiert nicht."
+
+#: includes/class-tim-backup-backup-service.php:214
+msgid "The backup archive is not a readable ZIP file."
+msgstr "Das Backup-Archiv ist keine lesbare ZIP-Datei."
+
+#: includes/class-tim-backup-backup-service.php:224
+msgid "The backup manifest is missing."
+msgstr "Das Backup-Manifest fehlt."
+
+#: includes/class-tim-backup-backup-service.php:239
+msgid "The backup manifest is invalid or unsupported."
+msgstr "Das Backup-Manifest ist ungültig oder wird nicht unterstützt."
+
+#: includes/class-tim-backup-backup-service.php:251
+msgid "The backup signature is invalid. The archive may have been changed."
+msgstr ""
+"Die Backup-Signatur ist ungültig. Das Archiv wurde möglicherweise verändert."
+
+#: includes/class-tim-backup-backup-service.php:259
+msgid "This backup belongs to a different WordPress site."
+msgstr "Dieses Backup gehört zu einer anderen WordPress-Website."
+
+#: includes/class-tim-backup-backup-service.php:287
+msgid "The backup contains an unexpected, duplicate, or unsafe archive entry."
+msgstr ""
+"Das Backup enthält einen unerwarteten, doppelten oder unsicheren "
+"Archiveintrag."
+
+#: includes/class-tim-backup-backup-service.php:298
+msgid "The backup archive contents do not match its signed manifest."
+msgstr ""
+"Der Inhalt des Backup-Archivs stimmt nicht mit seinem signierten Manifest "
+"überein."
+
+#: includes/class-tim-backup-backup-service.php:307
+msgid "The backup contains an unsafe archive path."
+msgstr "Das Backup enthält einen unsicheren Archivpfad."
+
+#: includes/class-tim-backup-backup-service.php:317
+msgid "A file recorded by the backup manifest is missing."
+msgstr "Eine im Backup-Manifest verzeichnete Datei fehlt."
+
+#: includes/class-tim-backup-backup-service.php:329
+#: includes/class-tim-backup-restore-job-service.php:637
+msgid "A backup file failed its integrity check."
+msgstr "Eine Backup-Datei hat die Integritätsprüfung nicht bestanden."
+
+#: includes/class-tim-backup-backup-service.php:353
+msgid "TIM Backup could not create a temporary working directory."
+msgstr "TIM Backup konnte kein temporäres Arbeitsverzeichnis erstellen."
+
+#: includes/class-tim-backup-backup-service.php:362
+msgid "TIM Backup could not create the backup archive."
+msgstr "TIM Backup konnte das Backup-Archiv nicht erstellen."
+
+#: includes/class-tim-backup-backup-service.php:400
+msgid "TIM Backup could not write the archive manifest."
+msgstr "TIM Backup konnte das Archiv-Manifest nicht schreiben."
+
+#: includes/class-tim-backup-backup-service.php:407
+msgid "TIM Backup could not finish writing the backup archive."
+msgstr "TIM Backup konnte das Schreiben des Backup-Archivs nicht abschließen."
+
+#: includes/class-tim-backup-backup-service.php:433
+msgid "The database could not start a repeatable-read backup transaction."
+msgstr "Die Datenbank konnte keine Repeatable-Read-Backup-Transaktion starten."
+
+#: includes/class-tim-backup-backup-service.php:443
+msgid "The database could not start a consistent backup transaction."
+msgstr "Die Datenbank konnte keine konsistente Backup-Transaktion starten."
+
+#: includes/class-tim-backup-backup-service.php:462
+msgid "No WordPress database tables were found."
+msgstr "Es wurden keine WordPress-Datenbanktabellen gefunden."
+
+#: includes/class-tim-backup-backup-service.php:476
+msgid "A database table has an unsafe name and cannot be backed up."
+msgstr ""
+"Eine Datenbanktabelle hat einen unsicheren Namen und kann nicht gesichert "
+"werden."
+
+#: includes/class-tim-backup-backup-service.php:487
+msgid "A database table schema could not be exported."
+msgstr "Ein Datenbanktabellenschema konnte nicht exportiert werden."
+
+#: includes/class-tim-backup-backup-service.php:496
+msgid ""
+"A prefixed database object is not a base table and cannot be backed up by "
+"this version."
+msgstr ""
+"Ein Datenbankobjekt mit Präfix ist keine Basistabelle und kann mit dieser "
+"Version nicht gesichert werden."
+
+#: includes/class-tim-backup-backup-service.php:511
+msgid "All backed-up tables must use InnoDB for a consistent snapshot."
+msgstr ""
+"Alle gesicherten Tabellen müssen für einen konsistenten Snapshot InnoDB "
+"verwenden."
+
+#: includes/class-tim-backup-backup-service.php:525
+msgid "Every backed-up table must have a primary key for deterministic export."
+msgstr ""
+"Jede gesicherte Tabelle benötigt für einen deterministischen Export einen "
+"Primärschlüssel."
+
+#: includes/class-tim-backup-backup-service.php:546
+msgid "A primary-key column has an unsafe name."
+msgstr "Eine Primärschlüsselspalte hat einen unsicheren Namen."
+
+#: includes/class-tim-backup-backup-service.php:570
+#: includes/class-tim-backup-backup-service.php:631
+msgid "A temporary database export file could not be created."
+msgstr "Eine temporäre Datenbankexportdatei konnte nicht erstellt werden."
+
+#: includes/class-tim-backup-backup-service.php:590
+msgid "Database rows could not be exported."
+msgstr "Datenbankzeilen konnten nicht exportiert werden."
+
+#: includes/class-tim-backup-backup-service.php:609
+msgid "A database row is too large for the resumable backup format."
+msgstr "Eine Datenbankzeile ist für das fortsetzbare Backup-Format zu groß."
+
+#: includes/class-tim-backup-backup-service.php:644
+msgid "Database export data could not be written."
+msgstr "Datenbankexportdaten konnten nicht geschrieben werden."
+
+#: includes/class-tim-backup-backup-service.php:671
+msgid "The database schema is too large for the resumable backup format."
+msgstr "Das Datenbankschema ist für das fortsetzbare Backup-Format zu groß."
+
+#: includes/class-tim-backup-backup-service.php:680
+msgid "The database schema could not be added to the archive."
+msgstr "Das Datenbankschema konnte dem Archiv nicht hinzugefügt werden."
+
+#: includes/class-tim-backup-backup-service.php:691
+msgid "The consistent database snapshot could not be completed."
+msgstr "Der konsistente Datenbank-Snapshot konnte nicht abgeschlossen werden."
+
+#: includes/class-tim-backup-backup-service.php:721
+msgid "Database export data could not be added to the archive."
+msgstr "Datenbankexportdaten konnten dem Archiv nicht hinzugefügt werden."
+
+#: includes/class-tim-backup-backup-service.php:730
+msgid "Database export data could not be hashed."
+msgstr "Für Datenbankexportdaten konnte kein Hash erstellt werden."
+
+#: includes/class-tim-backup-backup-service.php:753
+msgid "The WordPress or backup storage path could not be resolved."
+msgstr "Der WordPress- oder Backup-Speicherpfad konnte nicht aufgelöst werden."
+
+#: includes/class-tim-backup-backup-service.php:791
+msgid "A WordPress file could not be added to the backup archive."
+msgstr ""
+"Eine WordPress-Datei konnte dem Backup-Archiv nicht hinzugefügt werden."
+
+#: includes/class-tim-backup-backup-service.php:800
+msgid "A WordPress file could not be hashed."
+msgstr "Für eine WordPress-Datei konnte kein Hash erstellt werden."
+
+#: includes/class-tim-backup-backup-service.php:809
+msgid "A WordPress directory could not be read during backup."
+msgstr ""
+"Ein WordPress-Verzeichnis konnte während des Backups nicht gelesen werden."
+
+#: includes/class-tim-backup-plugin.php:212
+msgid "TIM Backup activation failed"
+msgstr "Aktivierung von TIM Backup fehlgeschlagen"
+
+#: includes/class-tim-backup-plugin.php:250
+msgid "The backup was created and verified successfully."
+msgstr "Das Backup wurde erfolgreich erstellt und geprüft."
+
+#: includes/class-tim-backup-plugin.php:268
+msgid "The deletion was not confirmed."
+msgstr "Das Löschen wurde nicht bestätigt."
+
+#: includes/class-tim-backup-plugin.php:290
+msgid "The backup was deleted."
+msgstr "Das Backup wurde gelöscht."
+
+#: includes/class-tim-backup-plugin.php:389
+msgid "The requested backup could not be downloaded."
+msgstr "Das angeforderte Backup konnte nicht heruntergeladen werden."
+
+#: includes/class-tim-backup-plugin.php:457
+msgid "TIM Backup is restoring the database. Please try again shortly."
+msgstr ""
+"TIM Backup stellt die Datenbank wieder her. Bitte versuche es in Kürze "
+"erneut."
+
+#: includes/class-tim-backup-plugin.php:458
+msgid "Database restore in progress"
+msgstr "Datenbankwiederherstellung läuft"
+
+#: includes/class-tim-backup-plugin.php:472
+msgid "TIM Backup Free 0.2.0 does not support WordPress Multisite."
+msgstr "TIM Backup Free 0.2.0 unterstützt WordPress Multisite nicht."
+
+#: includes/class-tim-backup-plugin.php:479
+msgid ""
+"A database restore is in progress. Other backup changes are temporarily "
+"unavailable."
+msgstr ""
+"Eine Datenbankwiederherstellung läuft. Andere Backup-Änderungen sind "
+"vorübergehend nicht verfügbar."
+
+#: includes/class-tim-backup-plugin.php:494
+msgid "You are not allowed to restore backups."
+msgstr "Du bist nicht berechtigt, Backups wiederherzustellen."
+
+#: includes/class-tim-backup-plugin.php:528
+msgid "You are not allowed to manage backups."
+msgstr "Du bist nicht berechtigt, Backups zu verwalten."
+
+#: includes/class-tim-backup-plugin.php:529
+msgid "Access denied"
+msgstr "Zugriff verweigert"
+
+#. translators: %s: Site name.
+#: includes/class-tim-backup-plugin.php:589
+#, php-format
+msgid "[%s] TIM Backup failed"
+msgstr "[%s] TIM Backup fehlgeschlagen"
+
+#. translators: 1: Site URL, 2: Error message.
+#: includes/class-tim-backup-plugin.php:594
+#, php-format
+msgid ""
+"TIM Backup could not create a backup for %1$s.\n"
+"\n"
+"Reason: %2$s\n"
+"\n"
+"Please sign in to WordPress and review TIM Backup."
+msgstr ""
+"TIM Backup konnte kein Backup für %1$s erstellen.\n"
+"\n"
+"Grund: %2$s\n"
+"\n"
+"Bitte melde dich bei WordPress an und überprüfe TIM Backup."
+
+#: includes/class-tim-backup-restore-job-service.php:121
+msgid "Another database restore is already in progress."
+msgstr "Eine andere Datenbankwiederherstellung läuft bereits."
+
+#: includes/class-tim-backup-restore-job-service.php:181
+#: includes/class-tim-backup-restore-job-service.php:272
+#: includes/class-tim-backup-restore-job-service.php:302
+msgid "No database restore job is available."
+msgstr "Es ist kein Auftrag zur Datenbankwiederherstellung verfügbar."
+
+#: includes/class-tim-backup-restore-job-service.php:232
+msgid "The database restore has an invalid saved phase."
+msgstr "Die Datenbankwiederherstellung hat eine ungültige gespeicherte Phase."
+
+#: includes/class-tim-backup-restore-job-service.php:319
+msgid ""
+"The restore can no longer be cancelled because database activation has "
+"started."
+msgstr ""
+"Die Wiederherstellung kann nicht mehr abgebrochen werden, da die Aktivierung "
+"der Datenbank begonnen hat."
+
+#: includes/class-tim-backup-restore-job-service.php:431
+msgid "The verified backup contains an unexpected database entry."
+msgstr "Das geprüfte Backup enthält einen unerwarteten Datenbankeintrag."
+
+#: includes/class-tim-backup-restore-job-service.php:439
+msgid "The verified backup does not contain a restorable database."
+msgstr "Das geprüfte Backup enthält keine wiederherstellbare Datenbank."
+
+#. translators: %s: Backup error message.
+#: includes/class-tim-backup-restore-job-service.php:481
+#, php-format
+msgid "Restore cancelled because the database safety backup failed: %s"
+msgstr ""
+"Wiederherstellung abgebrochen, weil das Datenbank-Sicherheitsbackup "
+"fehlgeschlagen ist: %s"
+
+#: includes/class-tim-backup-restore-job-service.php:528
+#: includes/class-tim-backup-restore-service.php:406
+msgid "The verified backup archive could not be opened for restore."
+msgstr ""
+"Das geprüfte Backup-Archiv konnte nicht zur Wiederherstellung geöffnet "
+"werden."
+
+#: includes/class-tim-backup-restore-job-service.php:542
+msgid "A database backup chunk is too large for a resumable restore."
+msgstr ""
+"Ein Datenbank-Backup-Block ist für eine fortsetzbare Wiederherstellung zu "
+"groß."
+
+#: includes/class-tim-backup-restore-job-service.php:552
+#: includes/class-tim-backup-restore-service.php:204
+#: includes/class-tim-backup-restore-service.php:213
+#: includes/class-tim-backup-restore-service.php:520
+msgid "Database table data is missing from the backup."
+msgstr "Daten einer Datenbanktabelle fehlen im Backup."
+
+#: includes/class-tim-backup-restore-job-service.php:583
+#: includes/class-tim-backup-restore-job-service.php:965
+msgid "The private restore workspace could not be created."
+msgstr ""
+"Der private Arbeitsbereich für die Wiederherstellung konnte nicht erstellt "
+"werden."
+
+#: includes/class-tim-backup-restore-job-service.php:594
+#: includes/class-tim-backup-restore-job-service.php:610
+#: includes/class-tim-backup-restore-job-service.php:624
+#: includes/class-tim-backup-restore-job-service.php:645
+msgid "A verified database file could not be prepared for restore."
+msgstr ""
+"Eine geprüfte Datenbankdatei konnte nicht für die Wiederherstellung "
+"vorbereitet werden."
+
+#: includes/class-tim-backup-restore-job-service.php:741
+#: includes/class-tim-backup-restore-job-service.php:902
+#: includes/class-tim-backup-restore-job-service.php:915
+#: includes/class-tim-backup-restore-job-service.php:925
+msgid "The verified database files do not match the database schema."
+msgstr ""
+"Die geprüften Datenbankdateien stimmen nicht mit dem Datenbankschema überein."
+
+#: includes/class-tim-backup-restore-job-service.php:858
+#: includes/class-tim-backup-restore-service.php:52
+#: includes/class-tim-backup-restore-service.php:439
+msgid "The database schema in the backup is invalid."
+msgstr "Das Datenbankschema im Backup ist ungültig."
+
+#: includes/class-tim-backup-restore-job-service.php:984
+msgid "The saved database restore job is invalid."
+msgstr "Der gespeicherte Auftrag zur Datenbankwiederherstellung ist ungültig."
+
+#: includes/class-tim-backup-restore-job-service.php:1060
+#: includes/class-tim-backup-restore-job-service.php:1077
+msgid "The saved database restore progress failed its integrity check."
+msgstr ""
+"Der gespeicherte Fortschritt der Datenbankwiederherstellung hat die "
+"Integritätsprüfung nicht bestanden."
+
+#: includes/class-tim-backup-restore-job-service.php:1103
+#: includes/class-tim-backup-restore-job-service.php:1114
+msgid "The database restore progress could not be saved."
+msgstr ""
+"Der Fortschritt der Datenbankwiederherstellung konnte nicht gespeichert "
+"werden."
+
+#: includes/class-tim-backup-restore-job-service.php:1171
+msgid ""
+"The database was restored successfully. The database safety backup was "
+"retained."
+msgstr ""
+"Die Datenbank wurde erfolgreich wiederhergestellt. Das Datenbank-"
+"Sicherheitsbackup wurde aufbewahrt."
+
+#: includes/class-tim-backup-restore-job-service.php:1216
+msgid "TIM Backup could not enable protected restore maintenance mode."
+msgstr ""
+"TIM Backup konnte den geschützten Wartungsmodus für die Wiederherstellung "
+"nicht aktivieren."
+
+#: includes/class-tim-backup-restore-job-service.php:1238
+msgid "TIM Backup could not disable restore maintenance mode."
+msgstr ""
+"TIM Backup konnte den Wartungsmodus für die Wiederherstellung nicht "
+"deaktivieren."
+
+#: includes/class-tim-backup-restore-job-service.php:1280
+msgid "The protected restore journal key is invalid."
+msgstr ""
+"Der geschützte Journalschlüssel für die Wiederherstellung ist ungültig."
+
+#: includes/class-tim-backup-restore-job-service.php:1295
+msgid "The protected restore journal key could not be created."
+msgstr ""
+"Der geschützte Journalschlüssel für die Wiederherstellung konnte nicht "
+"erstellt werden."
+
+#: includes/class-tim-backup-restore-service.php:59
+#: includes/class-tim-backup-restore-service.php:446
+msgid "The database prefix is too long for a safe staged restore."
+msgstr ""
+"Das Datenbankpräfix ist für eine sichere gestaffelte Wiederherstellung zu "
+"lang."
+
+#: includes/class-tim-backup-restore-service.php:76
+#: includes/class-tim-backup-restore-service.php:465
+msgid "A database table schema cannot be restored safely by this version."
+msgstr ""
+"Ein Datenbanktabellenschema kann mit dieser Version nicht sicher "
+"wiederhergestellt werden."
+
+#: includes/class-tim-backup-restore-service.php:87
+#: includes/class-tim-backup-restore-service.php:138
+#: includes/class-tim-backup-restore-service.php:478
+msgid "A temporary database table name is invalid."
+msgstr "Ein temporärer Datenbanktabellenname ist ungültig."
+
+#: includes/class-tim-backup-restore-service.php:149
+#: includes/class-tim-backup-restore-service.php:491
+msgid "A database CREATE statement did not match its table."
+msgstr "Eine CREATE-Anweisung der Datenbank passte nicht zu ihrer Tabelle."
+
+#: includes/class-tim-backup-restore-service.php:158
+#: includes/class-tim-backup-restore-service.php:502
+msgid "A temporary database table could not be created."
+msgstr "Eine temporäre Datenbanktabelle konnte nicht erstellt werden."
+
+#: includes/class-tim-backup-restore-service.php:223
+msgid "The database restore could not resume from its saved position."
+msgstr ""
+"Die Datenbankwiederherstellung konnte nicht an der gespeicherten Position "
+"fortgesetzt werden."
+
+#: includes/class-tim-backup-restore-service.php:258
+#: includes/class-tim-backup-restore-service.php:577
+msgid "A database row could not be restored."
+msgstr "Eine Datenbankzeile konnte nicht wiederhergestellt werden."
+
+#: includes/class-tim-backup-restore-service.php:271
+msgid "The database restore could not save its current position."
+msgstr ""
+"Die Datenbankwiederherstellung konnte ihre aktuelle Position nicht speichern."
+
+#: includes/class-tim-backup-restore-service.php:314
+msgid "The staged database tables are not in a safe state for activation."
+msgstr ""
+"Die vorbereiteten Datenbanktabellen befinden sich nicht in einem sicheren "
+"Zustand für die Aktivierung."
+
+#: includes/class-tim-backup-restore-service.php:328
+#: includes/class-tim-backup-restore-service.php:598
+msgid "The restored database tables could not be activated."
+msgstr ""
+"Die wiederhergestellten Datenbanktabellen konnten nicht aktiviert werden."
+
+#: includes/class-tim-backup-restore-service.php:356
+msgid "A temporary database table could not be removed safely."
+msgstr "Eine temporäre Datenbanktabelle konnte nicht sicher entfernt werden."
+
+#: includes/class-tim-backup-restore-service.php:539
+#: includes/class-tim-backup-restore-service.php:639
+msgid "A database row in the backup is invalid."
+msgstr "Eine Datenbankzeile im Backup ist ungültig."
+
+#: includes/class-tim-backup-restore-service.php:552
+#: includes/class-tim-backup-restore-service.php:649
+msgid "A database column name in the backup is invalid."
+msgstr "Ein Datenbankspaltenname im Backup ist ungültig."
+
+#: includes/class-tim-backup-restore-service.php:564
+#: includes/class-tim-backup-restore-service.php:658
+msgid "A database value in the backup is invalid."
+msgstr "Ein Datenbankwert im Backup ist ungültig."
+
 #: includes/class-tim-backup-storage.php:60
 msgid ""
 "The backup directory must be outside the public document root. Define "
 "TIM_BACKUP_STORAGE_DIR with a private writable path."
 msgstr ""
 "Das Backup-Verzeichnis muss außerhalb des öffentlichen Dokumentenstamms "
-"liegen. Definiere TIM_BACKUP_STORAGE_DIR mit einem privaten beschreibbaren Pfad."
+"liegen. Definiere TIM_BACKUP_STORAGE_DIR mit einem privaten beschreibbaren "
+"Pfad."
 
 #: includes/class-tim-backup-storage.php:67
 msgid ""
@@ -27,8 +923,8 @@ msgid ""
 "Define TIM_BACKUP_STORAGE_DIR with a writable private path."
 msgstr ""
 "TIM Backup konnte außerhalb des Dokumentenstamms keinen privaten Speicher "
-"erstellen. Definiere TIM_BACKUP_STORAGE_DIR mit einem beschreibbaren privaten "
-"Pfad."
+"erstellen. Definiere TIM_BACKUP_STORAGE_DIR mit einem beschreibbaren "
+"privaten Pfad."
 
 #: includes/class-tim-backup-storage.php:83
 msgid "TIM Backup could not protect its storage directory."
@@ -46,628 +942,41 @@ msgstr "Das angeforderte Backup existiert nicht."
 msgid "The backup metadata is invalid."
 msgstr "Die Backup-Metadaten sind ungültig."
 
-#: includes/class-tim-backup-storage.php:276
+#: includes/class-tim-backup-storage.php:277
 msgid "No backup could be selected for local rotation."
 msgstr "Für die lokale Rotation konnte kein Backup ausgewählt werden."
 
-#: includes/class-tim-backup-storage.php:295
+#: includes/class-tim-backup-storage.php:297
 msgid "The backup index could not be updated."
 msgstr "Der Backup-Index konnte nicht aktualisiert werden."
 
-#: includes/class-tim-backup-storage.php:348
+#: includes/class-tim-backup-storage.php:350
 msgid "The backup index could not be preserved after restore."
 msgstr ""
 "Der Backup-Index konnte nach der Wiederherstellung nicht beibehalten werden."
 
-#: includes/class-tim-backup-storage.php:377
+#: includes/class-tim-backup-storage.php:379
 msgid "The backup archive could not be deleted."
 msgstr "Das Backup-Archiv konnte nicht gelöscht werden."
 
-#: includes/class-tim-backup-storage.php:414
+#: includes/class-tim-backup-storage.php:416
 msgid "Another TIM Backup operation is already running."
 msgstr "Ein anderer TIM-Backup-Vorgang wird bereits ausgeführt."
 
-#: includes/class-tim-backup-backup-service.php:52
-msgid "The requested backup type is invalid."
-msgstr "Der angeforderte Backup-Typ ist ungültig."
-
-#: includes/class-tim-backup-backup-service.php:59
-msgid "The PHP ZIP extension is required to create backups."
-msgstr "Die PHP-ZIP-Erweiterung wird zum Erstellen von Backups benötigt."
-
-#: includes/class-tim-backup-backup-service.php:99
-msgid "The completed backup archive could not be finalized."
-msgstr "Das abgeschlossene Backup-Archiv konnte nicht finalisiert werden."
-
-#: includes/class-tim-backup-backup-service.php:121
-msgid "The completed backup archive could not be hashed."
-msgstr "Für das fertige Backup-Archiv konnte kein Hash erstellt werden."
-
-#: includes/class-tim-backup-backup-service.php:159
-msgid "The backup archive does not exist."
-msgstr "Das Backup-Archiv existiert nicht."
-
-#: includes/class-tim-backup-backup-service.php:168
-msgid "The backup archive is not a readable ZIP file."
-msgstr "Das Backup-Archiv ist keine lesbare ZIP-Datei."
-
-#: includes/class-tim-backup-backup-service.php:178
-msgid "The backup manifest is missing."
-msgstr "Das Backup-Manifest fehlt."
-
-#: includes/class-tim-backup-backup-service.php:193
-msgid "The backup manifest is invalid or unsupported."
-msgstr "Das Backup-Manifest ist ungültig oder wird nicht unterstützt."
-
-#: includes/class-tim-backup-backup-service.php:205
-msgid "The backup signature is invalid. The archive may have been changed."
-msgstr ""
-"Die Backup-Signatur ist ungültig. Das Archiv wurde möglicherweise verändert."
-
-#: includes/class-tim-backup-backup-service.php:213
-msgid "This backup belongs to a different WordPress site."
-msgstr "Dieses Backup gehört zu einer anderen WordPress-Website."
-
-#: includes/class-tim-backup-backup-service.php:240
-msgid "The backup contains an unexpected, duplicate, or unsafe archive entry."
-msgstr ""
-"Das Backup enthält einen unerwarteten, doppelten oder unsicheren "
-"Archiveintrag."
-
-#: includes/class-tim-backup-backup-service.php:251
-msgid "The backup archive contents do not match its signed manifest."
-msgstr ""
-"Der Inhalt des Backup-Archivs stimmt nicht mit seinem signierten Manifest "
-"überein."
-
-#: includes/class-tim-backup-backup-service.php:260
-msgid "The backup contains an unsafe archive path."
-msgstr "Das Backup enthält einen unsicheren Archivpfad."
-
-#: includes/class-tim-backup-backup-service.php:270
-msgid "A file recorded by the backup manifest is missing."
-msgstr "Eine im Backup-Manifest verzeichnete Datei fehlt."
-
-#: includes/class-tim-backup-backup-service.php:282
-msgid "A backup file failed its integrity check."
-msgstr "Eine Backup-Datei hat die Integritätsprüfung nicht bestanden."
-
-#: includes/class-tim-backup-backup-service.php:306
-msgid "TIM Backup could not create a temporary working directory."
-msgstr "TIM Backup konnte kein temporäres Arbeitsverzeichnis erstellen."
-
-#: includes/class-tim-backup-backup-service.php:315
-msgid "TIM Backup could not create the backup archive."
-msgstr "TIM Backup konnte das Backup-Archiv nicht erstellen."
-
-#: includes/class-tim-backup-backup-service.php:353
-msgid "TIM Backup could not write the archive manifest."
-msgstr "TIM Backup konnte das Archiv-Manifest nicht schreiben."
-
-#: includes/class-tim-backup-backup-service.php:360
-msgid "TIM Backup could not finish writing the backup archive."
-msgstr "TIM Backup konnte das Schreiben des Backup-Archivs nicht abschließen."
-
-#: includes/class-tim-backup-backup-service.php:386
-msgid "The database could not start a repeatable-read backup transaction."
-msgstr "Die Datenbank konnte keine Repeatable-Read-Backup-Transaktion starten."
-
-#: includes/class-tim-backup-backup-service.php:396
-msgid "The database could not start a consistent backup transaction."
-msgstr "Die Datenbank konnte keine konsistente Backup-Transaktion starten."
-
-#: includes/class-tim-backup-backup-service.php:415
-msgid "No WordPress database tables were found."
-msgstr "Es wurden keine WordPress-Datenbanktabellen gefunden."
-
-#: includes/class-tim-backup-backup-service.php:429
-msgid "A database table has an unsafe name and cannot be backed up."
-msgstr ""
-"Eine Datenbanktabelle hat einen unsicheren Namen und kann nicht gesichert "
-"werden."
-
-#: includes/class-tim-backup-backup-service.php:440
-msgid "A database table schema could not be exported."
-msgstr "Ein Datenbanktabellenschema konnte nicht exportiert werden."
-
-#: includes/class-tim-backup-backup-service.php:449
-msgid ""
-"A prefixed database object is not a base table and cannot be backed up by "
-"this version."
-msgstr ""
-"Ein Datenbankobjekt mit Präfix ist keine Basistabelle und kann mit dieser "
-"Version nicht gesichert werden."
-
-#: includes/class-tim-backup-backup-service.php:464
-msgid "All backed-up tables must use InnoDB for a consistent snapshot."
-msgstr "Alle gesicherten Tabellen müssen für einen konsistenten Snapshot InnoDB verwenden."
-
-#: includes/class-tim-backup-backup-service.php:478
-msgid "Every backed-up table must have a primary key for deterministic export."
-msgstr "Jede gesicherte Tabelle benötigt für einen deterministischen Export einen Primärschlüssel."
-
-#: includes/class-tim-backup-backup-service.php:499
-msgid "A primary-key column has an unsafe name."
-msgstr "Eine Primärschlüsselspalte hat einen unsicheren Namen."
-
-#: includes/class-tim-backup-backup-service.php:520
-msgid "A temporary database export file could not be created."
-msgstr "Eine temporäre Datenbankexportdatei konnte nicht erstellt werden."
-
-#: includes/class-tim-backup-backup-service.php:540
-msgid "Database rows could not be exported."
-msgstr "Datenbankzeilen konnten nicht exportiert werden."
-
-#: includes/class-tim-backup-backup-service.php:557
-msgid "Database export data could not be written."
-msgstr "Datenbankexportdaten konnten nicht geschrieben werden."
-
-#: includes/class-tim-backup-backup-service.php:574
-msgid "Database export data could not be added to the archive."
-msgstr "Datenbankexportdaten konnten dem Archiv nicht hinzugefügt werden."
-
-#: includes/class-tim-backup-backup-service.php:585
-msgid "Database export data could not be hashed."
-msgstr "Für Datenbankexportdaten konnte kein Hash erstellt werden."
-
-#: includes/class-tim-backup-backup-service.php:600
-msgid "The database schema could not be added to the archive."
-msgstr "Das Datenbankschema konnte dem Archiv nicht hinzugefügt werden."
-
-#: includes/class-tim-backup-backup-service.php:611
-msgid "The consistent database snapshot could not be completed."
-msgstr "Der konsistente Datenbank-Snapshot konnte nicht abgeschlossen werden."
-
-#: includes/class-tim-backup-backup-service.php:633
-msgid "The WordPress or backup storage path could not be resolved."
-msgstr "Der WordPress- oder Backup-Speicherpfad konnte nicht aufgelöst werden."
-
-#: includes/class-tim-backup-backup-service.php:671
-msgid "A WordPress file could not be added to the backup archive."
-msgstr ""
-"Eine WordPress-Datei konnte dem Backup-Archiv nicht hinzugefügt werden."
-
-#: includes/class-tim-backup-backup-service.php:680
-msgid "A WordPress file could not be hashed."
-msgstr "Für eine WordPress-Datei konnte kein Hash erstellt werden."
-
-#: includes/class-tim-backup-backup-service.php:689
-msgid "A WordPress directory could not be read during backup."
-msgstr ""
-"Ein WordPress-Verzeichnis konnte während des Backups nicht gelesen werden."
-
-#: includes/class-tim-backup-restore-service.php:81
-msgid "The verified backup archive could not be opened for restore."
-msgstr ""
-"Das geprüfte Backup-Archiv konnte nicht zur Wiederherstellung geöffnet "
-"werden."
-
-#: includes/class-tim-backup-restore-service.php:114
-msgid "The database schema in the backup is invalid."
-msgstr "Das Datenbankschema im Backup ist ungültig."
-
-#: includes/class-tim-backup-restore-service.php:121
-msgid "The database prefix is too long for a safe staged restore."
-msgstr ""
-"Das Datenbankpräfix ist für eine sichere gestaffelte Wiederherstellung zu "
-"lang."
-
-#: includes/class-tim-backup-restore-service.php:140
-msgid "A database table schema cannot be restored safely by this version."
-msgstr ""
-"Ein Datenbanktabellenschema kann mit dieser Version nicht sicher "
-"wiederhergestellt werden."
-
-#: includes/class-tim-backup-restore-service.php:153
-msgid "A temporary database table name is invalid."
-msgstr "Ein temporärer Datenbanktabellenname ist ungültig."
-
-#: includes/class-tim-backup-restore-service.php:166
-msgid "A database CREATE statement did not match its table."
-msgstr "Eine CREATE-Anweisung der Datenbank passte nicht zu ihrer Tabelle."
-
-#: includes/class-tim-backup-restore-service.php:177
-msgid "A temporary database table could not be created."
-msgstr "Eine temporäre Datenbanktabelle konnte nicht erstellt werden."
-
-#: includes/class-tim-backup-restore-service.php:195
-msgid "Database table data is missing from the backup."
-msgstr "Daten einer Datenbanktabelle fehlen im Backup."
-
-#: includes/class-tim-backup-restore-service.php:208
-msgid "A database row in the backup is invalid."
-msgstr "Eine Datenbankzeile im Backup ist ungültig."
-
-#: includes/class-tim-backup-restore-service.php:221
-msgid "A database column name in the backup is invalid."
-msgstr "Ein Datenbankspaltenname im Backup ist ungültig."
-
-#: includes/class-tim-backup-restore-service.php:233
-msgid "A database value in the backup is invalid."
-msgstr "Ein Datenbankwert im Backup ist ungültig."
-
-#: includes/class-tim-backup-restore-service.php:246
-msgid "A database row could not be restored."
-msgstr "Eine Datenbankzeile konnte nicht wiederhergestellt werden."
-
-#: includes/class-tim-backup-restore-service.php:267
-msgid "The restored database tables could not be activated."
-msgstr ""
-"Die wiederhergestellten Datenbanktabellen konnten nicht aktiviert werden."
-
-#: includes/class-tim-backup-admin.php:55
-#: includes/class-tim-backup-admin.php:56
-#: includes/class-tim-backup-admin.php:110
-msgid "TIM Backup"
-msgstr "TIM Backup"
-
-#: includes/class-tim-backup-admin.php:95
-msgid "Overview"
-msgstr "Übersicht"
-
-#: includes/class-tim-backup-admin.php:96
-msgid "Backups"
-msgstr "Backups"
-
-#: includes/class-tim-backup-admin.php:97
-msgid "System"
-msgstr "System"
-
-#: includes/class-tim-backup-admin.php:109
-msgid "TIM Plugin Series"
-msgstr "TIM-Plugin-Serie"
-
-#: includes/class-tim-backup-admin.php:111
-msgid "Secure local backups with verification before you need them."
-msgstr "Sichere lokale Backups mit Prüfung, bevor du sie benötigst."
-
-#. translators: %s: Plugin version.
-#: includes/class-tim-backup-admin.php:117
-#, php-format
-msgid "Version %s"
-msgstr "Version %s"
-
-#: includes/class-tim-backup-admin.php:124
-msgid "TIM Backup sections"
-msgstr "TIM-Backup-Bereiche"
-
-#: includes/class-tim-backup-admin.php:167
-msgid "Backup status"
-msgstr "Backup-Status"
-
-#: includes/class-tim-backup-admin.php:169
-msgid "Protected locally"
-msgstr "Lokal geschützt"
-
-#. translators: %s: Human-readable backup date.
-#: includes/class-tim-backup-admin.php:174
-#, php-format
-msgid "Latest verified backup: %s"
-msgstr "Letztes geprüftes Backup: %s"
-
-#: includes/class-tim-backup-admin.php:180
-msgid "Create your first backup"
-msgstr "Erstelle dein erstes Backup"
-
-#: includes/class-tim-backup-admin.php:181
-msgid "No managed backup is available yet."
-msgstr "Es ist noch kein verwaltetes Backup verfügbar."
-
-#: includes/class-tim-backup-admin.php:184
-msgid "Manage backups"
-msgstr "Backups verwalten"
-
-#: includes/class-tim-backup-admin.php:189
-msgid "Weekly automation"
-msgstr "Wöchentliche Automatisierung"
-
-#: includes/class-tim-backup-admin.php:190
-msgid "Full site backup"
-msgstr "Vollständiges Website-Backup"
-
-#. translators: %s: Date of next scheduled backup.
-#: includes/class-tim-backup-admin.php:196
-#, php-format
-msgid "Next run: %s"
-msgstr "Nächste Ausführung: %s"
-
-#: includes/class-tim-backup-admin.php:200
-msgid "The weekly event is not currently scheduled."
-msgstr "Das wöchentliche Ereignis ist derzeit nicht geplant."
-
-#: includes/class-tim-backup-admin.php:204
-msgid "WordPress Cron runs when the site receives traffic."
-msgstr "WordPress Cron wird ausgeführt, wenn die Website Zugriffe erhält."
-
-#: includes/class-tim-backup-admin.php:208
-msgid "Local retention"
-msgstr "Lokale Aufbewahrung"
-
-#. translators: 1: Current backup count, 2: Maximum backup count.
-#: includes/class-tim-backup-admin.php:213
-#, php-format
-msgid "%1$d of %2$d backups"
-msgstr "%1$d von %2$d Backups"
-
-#: includes/class-tim-backup-admin.php:219
-msgid ""
-"After a successful fourth backup, the oldest managed archive is removed."
-msgstr ""
-"Nach einem erfolgreichen vierten Backup wird das älteste verwaltete Archiv "
-"entfernt."
-
-#: includes/class-tim-backup-admin.php:224
-msgid "Security by default"
-msgstr "Sicherheit als Standard"
-
-#: includes/class-tim-backup-admin.php:226
-msgid "Archives use random names and protected local storage."
-msgstr ""
-"Archive verwenden zufällige Namen und einen geschützten lokalen Speicher."
-
-#: includes/class-tim-backup-admin.php:227
-msgid "Every payload file is checked with SHA-256."
-msgstr "Jede Nutzdatendatei wird mit SHA-256 geprüft."
-
-#: includes/class-tim-backup-admin.php:228
-msgid "A site-bound signature is verified before restore."
-msgstr ""
-"Vor der Wiederherstellung wird eine an die Website gebundene Signatur "
-"geprüft."
-
-#: includes/class-tim-backup-admin.php:229
-msgid ""
-"Downloads and changes require administrator permission and request "
-"verification."
-msgstr ""
-"Downloads und Änderungen erfordern Administratorrechte und eine "
-"Anfrageprüfung."
-
-#: includes/class-tim-backup-admin.php:251
-msgid "Protected archives"
-msgstr "Geschützte Archive"
-
-#: includes/class-tim-backup-admin.php:252
-msgid "Local backups"
-msgstr "Lokale Backups"
-
-#: includes/class-tim-backup-admin.php:254
-msgid "Maximum: 3"
-msgstr "Maximum: 3"
-
-#: includes/class-tim-backup-admin.php:260
-msgid "No backups yet"
-msgstr "Noch keine Backups"
-
-#: includes/class-tim-backup-admin.php:261
-msgid "Create a full or database backup above."
-msgstr "Erstelle oben ein vollständiges oder ein Datenbank-Backup."
-
-#: includes/class-tim-backup-admin.php:285
-#: includes/class-tim-backup-admin.php:316
-msgid "Full backup"
-msgstr "Vollständiges Backup"
-
-#: includes/class-tim-backup-admin.php:285
-#: includes/class-tim-backup-admin.php:316
-msgid "Database backup"
-msgstr "Datenbank-Backup"
-
-#: includes/class-tim-backup-admin.php:290
-msgid "Back up the database and regular files below the WordPress root."
-msgstr ""
-"Sichert die Datenbank und reguläre Dateien unterhalb des WordPress-"
-"Stammverzeichnisses."
-
-#: includes/class-tim-backup-admin.php:291
-msgid ""
-"Back up all current-site database tables, including WooCommerce HPOS tables."
-msgstr ""
-"Sichert alle Datenbanktabellen der aktuellen Website einschließlich "
-"WooCommerce-HPOS-Tabellen."
-
-#: includes/class-tim-backup-admin.php:300
-msgid "Create and verify"
-msgstr "Erstellen und prüfen"
-
-#. translators: %s: Backup duration in seconds.
-#: includes/class-tim-backup-admin.php:331
-#, php-format
-msgid "%s seconds"
-msgstr "%s Sekunden"
-
-#: includes/class-tim-backup-admin.php:341
-msgid "Verified at creation"
-msgstr "Bei Erstellung geprüft"
-
-#: includes/class-tim-backup-admin.php:342
-msgid "Archive changed"
-msgstr "Archiv verändert"
-
-#: includes/class-tim-backup-admin.php:353
-msgid "Download"
-msgstr "Herunterladen"
-
-#: includes/class-tim-backup-admin.php:358
-msgid "Restore database only"
-msgstr "Nur Datenbank wiederherstellen"
-
-#: includes/class-tim-backup-admin.php:358
-msgid "Restore database"
-msgstr "Datenbank wiederherstellen"
-
-#: includes/class-tim-backup-admin.php:364
-msgid ""
-"This overwrites current database data contained in the backup. Site files "
-"are not restored."
-msgstr ""
-"Dadurch werden aktuelle Datenbankdaten überschrieben, die im Backup enthalten "
-"sind. Website-Dateien werden nicht wiederhergestellt."
-
-#: includes/class-tim-backup-admin.php:365
-msgid "TIM Backup first creates a full safety backup of the current state."
-msgstr ""
-"TIM Backup erstellt zuerst ein vollständiges Sicherheits-Backup des "
-"aktuellen Zustands."
-
-#: includes/class-tim-backup-admin.php:368
-msgid "I understand and want to restore the database from this backup."
-msgstr "Ich habe dies verstanden und möchte die Datenbank aus diesem Backup wiederherstellen."
-
-#: includes/class-tim-backup-admin.php:370
-msgid "Restore database now"
-msgstr "Datenbank jetzt wiederherstellen"
-
-#: includes/class-tim-backup-admin.php:375
-msgid "Delete"
-msgstr "Löschen"
-
-#: includes/class-tim-backup-admin.php:380
-msgid "Permanently delete this backup?"
-msgstr "Dieses Backup dauerhaft löschen?"
-
-#: includes/class-tim-backup-admin.php:383
-msgid "I understand that this archive cannot be recovered."
-msgstr ""
-"Ich habe verstanden, dass dieses Archiv nicht wiederhergestellt werden kann."
-
-#: includes/class-tim-backup-admin.php:385
-msgid "Delete permanently"
-msgstr "Dauerhaft löschen"
-
-#: includes/class-tim-backup-admin.php:401
-msgid "PHP 8.1 or newer"
-msgstr "PHP 8.1 oder neuer"
-
-#: includes/class-tim-backup-admin.php:402
-msgid "PHP ZIP extension"
-msgstr "PHP-ZIP-Erweiterung"
-
-#: includes/class-tim-backup-admin.php:403
-msgid "Writable backup storage"
-msgstr "Beschreibbarer Backup-Speicher"
-
-#: includes/class-tim-backup-admin.php:404
-msgid "Single-site WordPress"
-msgstr "WordPress-Einzelinstallation"
-
-#: includes/class-tim-backup-admin.php:409
-msgid "Environment"
-msgstr "Umgebung"
-
-#: includes/class-tim-backup-admin.php:410
-msgid "System checks"
-msgstr "Systemprüfungen"
-
-#: includes/class-tim-backup-admin.php:416
-msgid "Ready"
-msgstr "Bereit"
-
-#: includes/class-tim-backup-admin.php:416
-msgid "Action needed"
-msgstr "Handlung erforderlich"
-
-#: includes/class-tim-backup-admin.php:423
-msgid "Privacy"
-msgstr "Datenschutz"
-
-#: includes/class-tim-backup-admin.php:424
-msgid "Local by design"
-msgstr "Bewusst lokal"
-
-#: includes/class-tim-backup-admin.php:425
-msgid ""
-"TIM Backup Free does not create an account, track usage, or contact an "
-"external service."
-msgstr ""
-"TIM Backup Free erstellt kein Konto, erfasst keine Nutzung und kontaktiert "
-"keinen externen Dienst."
-
-#: includes/class-tim-backup-admin.php:426
-msgid ""
-"Backup archives remain on this WordPress server until an administrator "
-"downloads or deletes them."
-msgstr ""
-"Backup-Archive bleiben auf diesem WordPress-Server, bis ein Administrator "
-"sie herunterlädt oder löscht."
-
-#: includes/class-tim-backup-plugin.php:111
-msgid "TIM Backup activation failed"
-msgstr "Aktivierung von TIM Backup fehlgeschlagen"
-
-#: includes/class-tim-backup-plugin.php:149
-msgid "The backup was created and verified successfully."
-msgstr "Das Backup wurde erfolgreich erstellt und geprüft."
-
-#: includes/class-tim-backup-plugin.php:167
-msgid "The deletion was not confirmed."
-msgstr "Das Löschen wurde nicht bestätigt."
-
-#: includes/class-tim-backup-plugin.php:184
-msgid "The backup was deleted."
-msgstr "Das Backup wurde gelöscht."
-
-#: includes/class-tim-backup-plugin.php:202
-msgid "The restore was not confirmed."
-msgstr "Die Wiederherstellung wurde nicht bestätigt."
-
-#. translators: %s: Backup error message.
-#: includes/class-tim-backup-plugin.php:223
-#, php-format
-msgid "Restore cancelled because the safety backup failed: %s"
-msgstr ""
-"Wiederherstellung abgebrochen, weil das Sicherheits-Backup fehlgeschlagen "
-"ist: %s"
-
-#: includes/class-tim-backup-plugin.php:235
-msgid ""
-"The database was restored successfully. A full safety backup of the previous "
-"state was retained."
-msgstr ""
-"Die Datenbank wurde erfolgreich wiederhergestellt. Ein vollständiges "
-"Sicherheits-Backup des vorherigen Zustands wurde aufbewahrt."
-
-#: includes/class-tim-backup-plugin.php:261
-msgid "The requested backup could not be downloaded."
-msgstr "Das angeforderte Backup konnte nicht heruntergeladen werden."
-
-#: includes/class-tim-backup-plugin.php:299
-msgid "TIM Backup Free 0.1.0 does not support WordPress Multisite."
-msgstr "TIM Backup Free 0.1.0 unterstützt WordPress Multisite nicht."
-
-#: includes/class-tim-backup-plugin.php:315
-msgid "You are not allowed to manage backups."
-msgstr "Du bist nicht berechtigt, Backups zu verwalten."
-
-#: includes/class-tim-backup-plugin.php:316
-msgid "Access denied"
-msgstr "Zugriff verweigert"
-
-#. translators: %s: Site name.
-#: includes/class-tim-backup-plugin.php:376
-#, php-format
-msgid "[%s] TIM Backup failed"
-msgstr "[%s] TIM Backup fehlgeschlagen"
-
-#. translators: 1: Site URL, 2: Error message.
-#: includes/class-tim-backup-plugin.php:381
-#, php-format
-msgid ""
-"TIM Backup could not create a backup for %1$s.\n"
-"\n"
-"Reason: %2$s\n"
-"\n"
-"Please sign in to WordPress and review TIM Backup."
-msgstr ""
-"TIM Backup konnte kein Backup für %1$s erstellen.\n"
-"\n"
-"Grund: %2$s\n"
-"\n"
-"Bitte melde dich bei WordPress an und überprüfe TIM Backup."
-
-#~ msgid "TIM Backup could not create its protected storage directory."
+#~ msgid ""
+#~ "This overwrites current database data contained in the backup. Site files "
+#~ "are not restored."
 #~ msgstr ""
-#~ "TIM Backup konnte sein geschütztes Speicherverzeichnis nicht erstellen."
+#~ "Dadurch werden aktuelle Datenbankdaten überschrieben, die im Backup "
+#~ "enthalten sind. Website-Dateien werden nicht wiederhergestellt."
+
+#~ msgid "TIM Backup first creates a full safety backup of the current state."
+#~ msgstr ""
+#~ "TIM Backup erstellt zuerst ein vollständiges Sicherheits-Backup des "
+#~ "aktuellen Zustands."
+
+#~ msgid "The restore was not confirmed."
+#~ msgstr "Die Wiederherstellung wurde nicht bestätigt."
 
 #~ msgid "The WordPress root path could not be resolved."
 #~ msgstr "Der WordPress-Stammpfad konnte nicht aufgelöst werden."
@@ -675,10 +984,6 @@ msgstr ""
 #~ msgid "A verified WordPress file could not be read from the archive."
 #~ msgstr ""
 #~ "Eine geprüfte WordPress-Datei konnte nicht aus dem Archiv gelesen werden."
-
-#~ msgid "A temporary restore file could not be created."
-#~ msgstr ""
-#~ "Eine temporäre Wiederherstellungsdatei konnte nicht erstellt werden."
 
 #~ msgid "A WordPress file could not be restored."
 #~ msgstr "Eine WordPress-Datei konnte nicht wiederhergestellt werden."

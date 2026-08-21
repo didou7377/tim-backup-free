@@ -20,6 +20,13 @@ final class TIM_Backup_Admin {
 	private TIM_Backup_Storage $storage;
 
 	/**
+	 * Restore jobs.
+	 *
+	 * @var TIM_Backup_Restore_Job_Service
+	 */
+	private TIM_Backup_Restore_Job_Service $restore_jobs;
+
+	/**
 	 * Admin page hook suffix.
 	 *
 	 * @var string
@@ -29,10 +36,12 @@ final class TIM_Backup_Admin {
 	/**
 	 * Constructor.
 	 *
-	 * @param TIM_Backup_Storage $storage Storage service.
+	 * @param TIM_Backup_Storage             $storage Storage service.
+	 * @param TIM_Backup_Restore_Job_Service $restore_jobs Restore jobs.
 	 */
-	public function __construct( TIM_Backup_Storage $storage ) {
-		$this->storage = $storage;
+	public function __construct( TIM_Backup_Storage $storage, TIM_Backup_Restore_Job_Service $restore_jobs ) {
+		$this->storage      = $storage;
+		$this->restore_jobs = $restore_jobs;
 	}
 
 	/**
@@ -79,6 +88,35 @@ final class TIM_Backup_Admin {
 			array(),
 			TIM_BACKUP_VERSION
 		);
+
+		wp_enqueue_script(
+			'tim-backup-restore',
+			TIM_BACKUP_URL . 'assets/js/admin-restore.js',
+			array(),
+			TIM_BACKUP_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'tim-backup-restore',
+			'timBackupRestore',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'tim_backup_restore_job' ),
+				'actions' => array(
+					'start'   => 'tim_backup_restore_start',
+					'advance' => 'tim_backup_restore_advance',
+					'status'  => 'tim_backup_restore_status',
+					'cancel'  => 'tim_backup_restore_cancel',
+				),
+				'text'    => array(
+					'requestFailed' => __( 'The restore request failed. You can safely reopen this page to continue.', 'tim-backup' ),
+					'cancelConfirm' => __( 'Cancel this restore and remove all prepared temporary database tables?', 'tim-backup' ),
+					'working'       => __( 'Restore in progress. Do not close this page unless necessary.', 'tim-backup' ),
+					'rows'          => __( 'rows', 'tim-backup' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -97,6 +135,7 @@ final class TIM_Backup_Admin {
 			'system'   => __( 'System', 'tim-backup' ),
 		);
 		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
+		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view navigation.
 
 		if ( ! isset( $tabs[ $tab ] ) ) {
 			$tab = 'overview';
@@ -120,6 +159,14 @@ final class TIM_Backup_Admin {
 					?>
 				</span>
 			</header>
+
+			<?php if ( 'restore' === $view ) : ?>
+				<?php $this->render_restore_assistant(); ?>
+			</div>
+				<?php
+				return;
+			endif;
+			?>
 
 			<nav class="nav-tab-wrapper tim-backup__tabs" aria-label="<?php esc_attr_e( 'TIM Backup sections', 'tim-backup' ); ?>">
 				<?php foreach ( $tabs as $key => $label ) : ?>
@@ -157,6 +204,118 @@ final class TIM_Backup_Admin {
 				}
 				?>
 			</main>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the dedicated guided database restore view.
+	 *
+	 * @return void
+	 */
+	private function render_restore_assistant(): void {
+		$backups    = $this->storage->all();
+		$selected   = isset( $_GET['backup_id'] ) ? sanitize_text_field( wp_unslash( $_GET['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only preselection.
+		$backups_url = add_query_arg(
+			array(
+				'page' => 'tim-backup',
+				'tab'  => 'backups',
+			),
+			admin_url( 'admin.php' )
+		);
+		?>
+		<div class="tim-restore-assistant" data-tim-restore-assistant>
+			<div class="tim-restore-assistant__topbar">
+				<a href="<?php echo esc_url( $backups_url ); ?>" class="button">
+					<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
+					<?php esc_html_e( 'Back to backup management', 'tim-backup' ); ?>
+				</a>
+			</div>
+
+			<section class="tim-card tim-card--wide tim-restore-assistant__intro">
+				<p class="tim-card__label"><?php esc_html_e( 'Guided restore', 'tim-backup' ); ?></p>
+				<h2><?php esc_html_e( 'Restore a database safely', 'tim-backup' ); ?></h2>
+				<p><?php esc_html_e( 'TIM Backup verifies the selected archive, creates a current database safety backup, prepares temporary tables, and activates them only after every row was imported successfully.', 'tim-backup' ); ?></p>
+			</section>
+
+			<?php if ( empty( $backups ) ) : ?>
+				<section class="tim-card tim-card--wide">
+					<h2><?php esc_html_e( 'No backup is available', 'tim-backup' ); ?></h2>
+					<p><?php esc_html_e( 'Create a database or full backup before opening the restore assistant.', 'tim-backup' ); ?></p>
+				</section>
+			<?php else : ?>
+				<div class="tim-restore-assistant__layout">
+					<section class="tim-card tim-restore-assistant__selection" data-tim-restore-selection>
+						<h2><?php esc_html_e( '1. Select backup', 'tim-backup' ); ?></h2>
+						<label for="tim-restore-backup"><strong><?php esc_html_e( 'Backup archive', 'tim-backup' ); ?></strong></label>
+						<select id="tim-restore-backup" data-tim-restore-backup>
+							<?php foreach ( $backups as $backup ) : ?>
+								<?php
+								$id   = (string) $backup['id'];
+								$type = 'full' === (string) $backup['type'] ? __( 'Full backup', 'tim-backup' ) : __( 'Database backup', 'tim-backup' );
+								$text = sprintf(
+									/* translators: 1: Backup type, 2: Date, 3: Size. */
+									__( '%1$s — %2$s — %3$s', 'tim-backup' ),
+									$type,
+									wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $backup['created_at'] ),
+									size_format( (int) $backup['size'], 1 )
+								);
+								?>
+								<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $selected, $id ); ?>>
+									<?php echo esc_html( $text ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+
+						<div class="tim-restore-assistant__warning">
+							<span class="dashicons dashicons-warning" aria-hidden="true"></span>
+							<p><strong><?php esc_html_e( 'Current database data will be replaced.', 'tim-backup' ); ?></strong><br><?php esc_html_e( 'Website files are not restored. A database safety backup is created first.', 'tim-backup' ); ?></p>
+						</div>
+
+						<label class="tim-restore-assistant__confirm">
+							<input type="checkbox" data-tim-restore-confirm>
+							<?php esc_html_e( 'I understand and want to start the guided database restore.', 'tim-backup' ); ?>
+						</label>
+
+						<button type="button" class="button button-primary button-hero" data-tim-restore-start disabled>
+							<?php esc_html_e( 'Start database restore', 'tim-backup' ); ?>
+						</button>
+					</section>
+
+					<section class="tim-card tim-restore-assistant__progress" data-tim-restore-progress aria-live="polite">
+						<h2><?php esc_html_e( '2. Restore progress', 'tim-backup' ); ?></h2>
+						<ol class="tim-restore-steps" data-tim-restore-steps>
+							<?php
+							$steps = array(
+								__( 'Verify backup archive', 'tim-backup' ),
+								__( 'Create current database safety backup', 'tim-backup' ),
+								__( 'Prepare verified database files', 'tim-backup' ),
+								__( 'Create temporary database tables', 'tim-backup' ),
+								__( 'Restore database data', 'tim-backup' ),
+								__( 'Activate restored database atomically', 'tim-backup' ),
+								__( 'Clean up and refresh WordPress', 'tim-backup' ),
+								__( 'Restore complete', 'tim-backup' ),
+							);
+
+							foreach ( $steps as $step ) :
+								?>
+								<li class="tim-restore-step is-waiting">
+									<span class="tim-restore-step__icon dashicons dashicons-marker" aria-hidden="true"></span>
+									<span><?php echo esc_html( $step ); ?></span>
+								</li>
+							<?php endforeach; ?>
+						</ol>
+						<p class="tim-restore-assistant__detail" data-tim-restore-detail><?php esc_html_e( 'Select a backup to begin.', 'tim-backup' ); ?></p>
+						<div class="tim-restore-assistant__error" data-tim-restore-error hidden></div>
+						<button type="button" class="button button-primary" data-tim-restore-retry hidden>
+							<?php esc_html_e( 'Retry final cleanup', 'tim-backup' ); ?>
+						</button>
+						<button type="button" class="button button-link-delete" data-tim-restore-cancel hidden>
+							<?php esc_html_e( 'Cancel restore', 'tim-backup' ); ?>
+						</button>
+					</section>
+				</div>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -330,6 +489,14 @@ final class TIM_Backup_Admin {
 		$id      = (string) $backup['id'];
 		$is_full = 'full' === (string) $backup['type'];
 		$type    = $is_full ? __( 'Full backup', 'tim-backup' ) : __( 'Database backup', 'tim-backup' );
+		$restore_url = add_query_arg(
+			array(
+				'page'      => 'tim-backup',
+				'view'      => 'restore',
+				'backup_id' => $id,
+			),
+			admin_url( 'admin.php' )
+		);
 		?>
 		<article class="tim-backup-item">
 			<div class="tim-backup-item__summary">
@@ -369,23 +536,9 @@ final class TIM_Backup_Admin {
 					<button type="submit" class="button"><?php esc_html_e( 'Download', 'tim-backup' ); ?></button>
 				</form>
 
-				<details class="tim-restore">
-					<summary class="button">
-						<?php echo esc_html( $is_full ? __( 'Restore database only', 'tim-backup' ) : __( 'Restore database', 'tim-backup' ) ); ?>
-					</summary>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="tim_backup_restore">
-						<input type="hidden" name="backup_id" value="<?php echo esc_attr( $id ); ?>">
-						<?php wp_nonce_field( 'tim_backup_restore' ); ?>
-						<p><strong><?php esc_html_e( 'This overwrites current database data contained in the backup. Site files are not restored.', 'tim-backup' ); ?></strong></p>
-						<p><?php esc_html_e( 'TIM Backup first creates a full safety backup of the current state.', 'tim-backup' ); ?></p>
-						<label>
-							<input type="checkbox" name="confirm_restore" value="<?php echo esc_attr( $id ); ?>" required>
-							<?php esc_html_e( 'I understand and want to restore the database from this backup.', 'tim-backup' ); ?>
-						</label>
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Restore database now', 'tim-backup' ); ?></button>
-					</form>
-				</details>
+				<a class="button" href="<?php echo esc_url( $restore_url ); ?>">
+					<?php echo esc_html( $is_full ? __( 'Restore database only', 'tim-backup' ) : __( 'Restore database', 'tim-backup' ) ); ?>
+				</a>
 
 				<details class="tim-restore tim-delete">
 					<summary class="button button-link-delete"><?php esc_html_e( 'Delete', 'tim-backup' ); ?></summary>

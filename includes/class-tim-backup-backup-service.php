@@ -23,6 +23,11 @@ final class TIM_Backup_Backup_Service {
 	private const DATABASE_BATCH_SIZE = 500;
 
 	/**
+	 * Maximum uncompressed database payload per independently hashed ZIP entry.
+	 */
+	private const DATABASE_CHUNK_BYTES = 4 * 1024 * 1024;
+
+	/**
 	 * Storage service.
 	 *
 	 * @var TIM_Backup_Storage
@@ -43,9 +48,10 @@ final class TIM_Backup_Backup_Service {
 	 *
 	 * @param string $type Backup type: full or database.
 	 * @param string $protected_id Backup that retention must keep.
+	 * @param string $reserved_id Optional pre-journaled id for idempotent creation.
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public function create( string $type, string $protected_id = '' ) {
+	public function create( string $type, string $protected_id = '', string $reserved_id = '' ) {
 		if ( ! in_array( $type, array( 'full', 'database' ), true ) ) {
 			return new WP_Error(
 				'tim_backup_invalid_type',
@@ -73,12 +79,51 @@ final class TIM_Backup_Backup_Service {
 		}
 
 		$started      = microtime( true );
-		$id           = $this->storage->create_id();
+		$id           = '' === $reserved_id ? $this->storage->create_id() : $reserved_id;
 		$archive_path = $this->storage->archive_path( $id );
 
 		if ( is_wp_error( $archive_path ) ) {
 			$this->storage->release_lock( 'operation', $lock );
 			return $archive_path;
+		}
+
+		if ( '' !== $reserved_id && is_file( $archive_path ) ) {
+			$existing     = $this->storage->find( $id );
+			$verification = $this->verify( $archive_path );
+
+			if ( is_wp_error( $verification ) ) {
+				$this->storage->release_lock( 'operation', $lock );
+				return $verification;
+			}
+
+			if ( ! is_wp_error( $existing ) ) {
+				$this->storage->release_lock( 'operation', $lock );
+				return $existing;
+			}
+
+			$archive_hash = hash_file( 'sha256', $archive_path );
+
+			if ( false === $archive_hash ) {
+				$this->storage->release_lock( 'operation', $lock );
+				return new WP_Error(
+					'tim_backup_archive_hash_failed',
+					__( 'The completed backup archive could not be hashed.', 'tim-backup' )
+				);
+			}
+
+			$metadata = array(
+				'id'           => $id,
+				'type'         => $type,
+				'created_at'   => (int) filemtime( $archive_path ),
+				'duration'     => 0.0,
+				'size'         => (int) filesize( $archive_path ),
+				'archive_hash' => $archive_hash,
+				'verified'     => true,
+			);
+			$registered = $this->storage->register( $metadata, $protected_id );
+			$this->storage->release_lock( 'operation', $lock );
+
+			return is_wp_error( $registered ) ? $registered : $metadata;
 		}
 
 		$partial_path = $archive_path . '.partial';
@@ -150,9 +195,10 @@ final class TIM_Backup_Backup_Service {
 	 * Verifies archive structure, signature and payload hashes.
 	 *
 	 * @param string $archive_path Absolute archive path.
+	 * @param bool   $verify_payloads Whether to hash every payload stream.
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public function verify( string $archive_path ) {
+	public function verify( string $archive_path, bool $verify_payloads = true ) {
 		if ( ! is_file( $archive_path ) ) {
 			return new WP_Error(
 				'tim_backup_archive_missing',
@@ -253,7 +299,7 @@ final class TIM_Backup_Backup_Service {
 			);
 		}
 
-		foreach ( $manifest['entries'] as $entry => $expected_hash ) {
+		foreach ( $verify_payloads ? $manifest['entries'] : array() as $entry => $expected_hash ) {
 			if ( ! $this->is_safe_archive_entry( (string) $entry ) ) {
 				$zip->close();
 				return new WP_Error(
@@ -511,7 +557,10 @@ final class TIM_Backup_Backup_Service {
 			}
 
 			$schema[ $table ] = (string) $create_row[1];
-			$temp_file       = $temp_path . DIRECTORY_SEPARATOR . hash( 'sha256', $table ) . '.jsonl';
+			$table_hash      = hash( 'sha256', $table );
+			$chunk_index     = 0;
+			$chunk_bytes     = 0;
+			$temp_file       = $temp_path . DIRECTORY_SEPARATOR . $table_hash . '-' . sprintf( '%06d', $chunk_index ) . '.jsonl';
 			$handle          = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen,WordPress.PHP.NoSilencedErrors.Discouraged -- Streaming prevents memory exhaustion; failure is handled below.
 
 			if ( false === $handle ) {
@@ -550,7 +599,44 @@ final class TIM_Backup_Backup_Service {
 						$encoded[ $column ] = null === $value ? null : base64_encode( (string) $value ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Binary-safe database transport, not code obfuscation.
 					}
 
-					if ( false === fwrite( $handle, (string) wp_json_encode( $encoded ) . "\n" ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+					$line = (string) wp_json_encode( $encoded ) . "\n";
+
+					if ( strlen( $line ) > self::DATABASE_CHUNK_BYTES ) {
+						fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+						return $fail(
+							new WP_Error(
+								'tim_backup_database_row_too_large',
+								__( 'A database row is too large for the resumable backup format.', 'tim-backup' )
+							)
+						);
+					}
+
+					if ( 0 < $chunk_bytes && $chunk_bytes + strlen( $line ) > self::DATABASE_CHUNK_BYTES ) {
+						fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+						$added = $this->add_database_chunk( $zip, $temp_file, $table_hash, $chunk_index, $entries );
+
+						if ( is_wp_error( $added ) ) {
+							return $fail( $added );
+						}
+
+						++$chunk_index;
+						$chunk_bytes = 0;
+						$temp_file   = $temp_path . DIRECTORY_SEPARATOR . $table_hash . '-' . sprintf( '%06d', $chunk_index ) . '.jsonl';
+						$handle      = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen,WordPress.PHP.NoSilencedErrors.Discouraged -- Opens the next bounded database chunk; failure is handled.
+
+						if ( false === $handle ) {
+							return $fail(
+								new WP_Error(
+									'tim_backup_database_file_failed',
+									__( 'A temporary database export file could not be created.', 'tim-backup' )
+								)
+							);
+						}
+					}
+
+					$bytes_written = fwrite( $handle, $line ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+
+					if ( false === $bytes_written || strlen( $line ) !== $bytes_written ) {
 						fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 						return $fail(
 							new WP_Error(
@@ -559,6 +645,8 @@ final class TIM_Backup_Backup_Service {
 							)
 						);
 					}
+
+					$chunk_bytes += $bytes_written;
 				}
 
 				$row_count = count( $rows );
@@ -566,34 +654,24 @@ final class TIM_Backup_Backup_Service {
 			} while ( self::DATABASE_BATCH_SIZE === $row_count );
 
 			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			$added = $this->add_database_chunk( $zip, $temp_file, $table_hash, $chunk_index, $entries );
 
-			$entry = 'tim-backup/database/data/' . hash( 'sha256', $table ) . '.jsonl';
-
-			if ( ! $zip->addFile( $temp_file, $entry ) ) {
-				return $fail(
-					new WP_Error(
-						'tim_backup_database_archive_failed',
-						__( 'Database export data could not be added to the archive.', 'tim-backup' )
-					)
-				);
+			if ( is_wp_error( $added ) ) {
+				return $fail( $added );
 			}
-
-			$hash = hash_file( 'sha256', $temp_file );
-
-			if ( false === $hash ) {
-				return $fail(
-					new WP_Error(
-						'tim_backup_database_hash_failed',
-						__( 'Database export data could not be hashed.', 'tim-backup' )
-					)
-				);
-			}
-
-			$entries[ $entry ] = $hash;
 		}
 
 		$schema_json  = (string) wp_json_encode( $schema, JSON_PRETTY_PRINT );
 		$schema_entry = 'tim-backup/database/schema.json';
+
+		if ( strlen( $schema_json ) > self::DATABASE_CHUNK_BYTES ) {
+			return $fail(
+				new WP_Error(
+					'tim_backup_database_schema_too_large',
+					__( 'The database schema is too large for the resumable backup format.', 'tim-backup' )
+				)
+			);
+		}
 
 		if ( ! $zip->addFromString( $schema_entry, $schema_json ) ) {
 			return $fail(
@@ -614,6 +692,46 @@ final class TIM_Backup_Backup_Service {
 				)
 			);
 		}
+
+		return true;
+	}
+
+	/**
+	 * Adds one independently hashed database chunk to the archive.
+	 *
+	 * @param ZipArchive            $zip ZIP archive.
+	 * @param string                $temp_file Temporary chunk path.
+	 * @param string                $table_hash SHA-256 table-name hash.
+	 * @param int                   $chunk_index Zero-based chunk index.
+	 * @param array<string, string> $entries Manifest entries.
+	 * @return true|WP_Error
+	 */
+	private function add_database_chunk(
+		ZipArchive $zip,
+		string $temp_file,
+		string $table_hash,
+		int $chunk_index,
+		array &$entries
+	) {
+		$entry = 'tim-backup/database/data/' . $table_hash . '-' . sprintf( '%06d', $chunk_index ) . '.jsonl';
+
+		if ( ! $zip->addFile( $temp_file, $entry ) ) {
+			return new WP_Error(
+				'tim_backup_database_archive_failed',
+				__( 'Database export data could not be added to the archive.', 'tim-backup' )
+			);
+		}
+
+		$hash = hash_file( 'sha256', $temp_file );
+
+		if ( false === $hash ) {
+			return new WP_Error(
+				'tim_backup_database_hash_failed',
+				__( 'Database export data could not be hashed.', 'tim-backup' )
+			);
+		}
+
+		$entries[ $entry ] = $hash;
 
 		return true;
 	}

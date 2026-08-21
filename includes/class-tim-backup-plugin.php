@@ -46,6 +46,20 @@ final class TIM_Backup_Plugin {
 	private TIM_Backup_Restore_Service $restore;
 
 	/**
+	 * Persistent restore job service.
+	 *
+	 * @var TIM_Backup_Restore_Job_Service
+	 */
+	private TIM_Backup_Restore_Job_Service $restore_jobs;
+
+	/**
+	 * Shared traffic-drain lock held for the current request.
+	 *
+	 * @var resource|null
+	 */
+	private $traffic_lock = null;
+
+	/**
 	 * Returns the singleton.
 	 *
 	 * @return TIM_Backup_Plugin
@@ -65,6 +79,7 @@ final class TIM_Backup_Plugin {
 		$this->storage = new TIM_Backup_Storage();
 		$this->backups = new TIM_Backup_Backup_Service( $this->storage );
 		$this->restore = new TIM_Backup_Restore_Service( $this->storage, $this->backups );
+		$this->restore_jobs = new TIM_Backup_Restore_Job_Service( $this->storage, $this->backups, $this->restore );
 	}
 
 	/**
@@ -73,15 +88,22 @@ final class TIM_Backup_Plugin {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		$this->guard_restore_traffic();
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ), -2000 );
+		add_action( 'plugins_loaded', array( $this, 'guard_restore_traffic' ), -1500 );
+		add_action( 'plugins_loaded', array( $this, 'enforce_restore_maintenance' ), -1000 );
 		add_action( 'admin_post_tim_backup_create', array( $this, 'handle_create' ) );
 		add_action( 'admin_post_tim_backup_delete', array( $this, 'handle_delete' ) );
 		add_action( 'admin_post_tim_backup_restore', array( $this, 'handle_restore' ) );
 		add_action( 'admin_post_tim_backup_download', array( $this, 'handle_download' ) );
+		add_action( 'wp_ajax_tim_backup_restore_start', array( $this, 'handle_restore_start' ) );
+		add_action( 'wp_ajax_tim_backup_restore_advance', array( $this, 'handle_restore_advance' ) );
+		add_action( 'wp_ajax_tim_backup_restore_status', array( $this, 'handle_restore_status' ) );
+		add_action( 'wp_ajax_tim_backup_restore_cancel', array( $this, 'handle_restore_cancel' ) );
 		add_action( self::CRON_HOOK, array( $this, 'run_scheduled_backup' ) );
 
 		if ( is_admin() ) {
-			$admin = new TIM_Backup_Admin( $this->storage );
+			$admin = new TIM_Backup_Admin( $this->storage, $this->restore_jobs );
 			$admin->init();
 		}
 	}
@@ -93,6 +115,85 @@ final class TIM_Backup_Plugin {
 	 */
 	public function load_textdomain(): void {
 		load_plugin_textdomain( 'tim-backup', false, dirname( plugin_basename( TIM_BACKUP_FILE ) ) . '/languages' );
+	}
+
+	/**
+	 * Holds a shared lock for normal requests so restore can drain them safely.
+	 *
+	 * @return void
+	 */
+	public function guard_restore_traffic(): void {
+		if (
+			is_resource( $this->traffic_lock )
+			|| ( defined( 'WP_CLI' ) && WP_CLI )
+			|| ! is_dir( $this->storage->directory() )
+		) {
+			return;
+		}
+
+		$lock = $this->storage->acquire_lock( 'restore-traffic', true );
+
+		if ( is_wp_error( $lock ) ) {
+			return;
+		}
+
+		$this->traffic_lock = $lock;
+	}
+
+	/**
+	 * Releases the current restore request before it requests the exclusive drain.
+	 *
+	 * @return void
+	 */
+	private function release_restore_traffic_lock(): void {
+		if ( is_resource( $this->traffic_lock ) ) {
+			$this->storage->release_lock( 'restore-traffic', $this->traffic_lock );
+			$this->traffic_lock = null;
+		}
+	}
+
+	/**
+	 * Blocks normal traffic while a verified database snapshot is being restored.
+	 *
+	 * Restore AJAX, login and the administrator's restore page remain reachable
+	 * so an interrupted job can be completed or cancelled.
+	 *
+	 * @return void
+	 */
+	public function enforce_restore_maintenance(): void {
+		if ( ! $this->restore_jobs->is_maintenance_active() ) {
+			return;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return;
+		}
+
+		if ( $this->is_restore_ajax_request() ) {
+			return;
+		}
+
+		$script_name = isset( $_SERVER['SCRIPT_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Used only for a basename comparison.
+
+		if ( 'wp-login.php' === basename( $script_name ) && $this->restore_jobs->allows_recovery_login() ) {
+			return;
+		}
+
+		$page   = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only recovery route.
+		$view   = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only recovery route.
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : '';
+
+		if (
+			is_admin()
+			&& 'GET' === $method
+			&& 'tim-backup' === $page
+			&& 'restore' === $view
+			&& current_user_can( 'manage_options' )
+		) {
+			return;
+		}
+
+		$this->send_restore_maintenance_response();
 	}
 
 	/**
@@ -168,8 +269,13 @@ final class TIM_Backup_Plugin {
 			$this->redirect( 'backups' );
 		}
 
-		$result = $this->storage->ensure_directory();
-		$lock   = is_wp_error( $result ) ? $result : $this->storage->acquire_lock( 'operation' );
+		$result = $this->can_operate();
+
+		if ( ! is_wp_error( $result ) ) {
+			$result = $this->storage->ensure_directory();
+		}
+
+		$lock = is_wp_error( $result ) ? $result : $this->storage->acquire_lock( 'operation' );
 
 		if ( is_wp_error( $lock ) ) {
 			$result = $lock;
@@ -188,54 +294,76 @@ final class TIM_Backup_Plugin {
 	}
 
 	/**
-	 * Handles explicitly confirmed restoration.
+	 * Redirects legacy restore forms to the guided assistant.
 	 *
 	 * @return void
 	 */
 	public function handle_restore(): void {
 		$this->authorize( 'tim_backup_restore' );
 
-		$id           = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
-		$confirmation = isset( $_POST['confirm_restore'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_restore'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
+		$id  = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
+		$url = add_query_arg(
+			array(
+				'page'      => 'tim-backup',
+				'view'      => 'restore',
+				'backup_id' => $id,
+			),
+			admin_url( 'admin.php' )
+		);
 
-		if ( '' === $id || ! hash_equals( $id, $confirmation ) ) {
-			$this->set_notice( 'error', __( 'The restore was not confirmed.', 'tim-backup' ) );
-			$this->redirect( 'backups' );
-		}
+		wp_safe_redirect( $url );
+		exit;
+	}
 
+	/**
+	 * Starts a guided restore job.
+	 *
+	 * @return void
+	 */
+	public function handle_restore_start(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$id     = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- AJAX nonce is verified first.
 		$result = $this->can_operate();
 
 		if ( ! is_wp_error( $result ) ) {
-			$selected_backup = $this->storage->find( $id );
-
-			if ( is_wp_error( $selected_backup ) ) {
-				$result = $selected_backup;
-			} else {
-				$safety_backup = $this->backups->create( 'full', $id );
-			}
-
-			if ( isset( $safety_backup ) && is_wp_error( $safety_backup ) ) {
-				$this->send_failure_email( $safety_backup );
-				$result = new WP_Error(
-					'tim_backup_restore_safety_failed',
-					sprintf(
-						/* translators: %s: Backup error message. */
-						__( 'Restore cancelled because the safety backup failed: %s', 'tim-backup' ),
-						$safety_backup->get_error_message()
-					)
-				);
-			} elseif ( isset( $safety_backup ) ) {
-				$result = $this->restore->restore( $id );
-			}
+			$result = $this->restore_jobs->start( $id, get_current_user_id() );
 		}
 
-		if ( is_wp_error( $result ) ) {
-			$this->set_notice( 'error', $result->get_error_message() );
-		} else {
-			$this->set_notice( 'success', __( 'The database was restored successfully. A full safety backup of the previous state was retained.', 'tim-backup' ) );
-		}
+		$this->send_restore_response( $result );
+	}
 
-		$this->redirect( 'backups' );
+	/**
+	 * Advances a guided restore job.
+	 *
+	 * @return void
+	 */
+	public function handle_restore_advance(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$this->send_restore_response( $this->restore_jobs->advance() );
+	}
+
+	/**
+	 * Returns guided restore status.
+	 *
+	 * @return void
+	 */
+	public function handle_restore_status(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$this->send_restore_response( $this->restore_jobs->status() );
+	}
+
+	/**
+	 * Cancels a guided restore before activation.
+	 *
+	 * @return void
+	 */
+	public function handle_restore_cancel(): void {
+		$this->authorize_restore_ajax();
+		$this->release_restore_traffic_lock();
+		$this->send_restore_response( $this->restore_jobs->cancel() );
 	}
 
 	/**
@@ -288,6 +416,51 @@ final class TIM_Backup_Plugin {
 	}
 
 	/**
+	 * Whether the current request is one of the protected restore AJAX routes.
+	 *
+	 * @return bool
+	 */
+	private function is_restore_ajax_request(): bool {
+		if ( ! wp_doing_ajax() ) {
+			return false;
+		}
+
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Routing only; handlers verify action-specific nonces.
+		$nonce  = isset( $_REQUEST['nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified immediately below for early routing.
+
+		return (
+			in_array(
+				$action,
+				array(
+					'tim_backup_restore_start',
+					'tim_backup_restore_advance',
+					'tim_backup_restore_status',
+					'tim_backup_restore_cancel',
+				),
+				true
+			)
+			&& false !== wp_verify_nonce( $nonce, 'tim_backup_restore_job' )
+			&& current_user_can( 'manage_options' )
+		);
+	}
+
+	/**
+	 * Sends the maintenance response used while traffic is drained or blocked.
+	 *
+	 * @return void
+	 */
+	private function send_restore_maintenance_response(): void {
+		status_header( 503 );
+		nocache_headers();
+		header( 'Retry-After: 60' );
+		wp_die(
+			esc_html__( 'TIM Backup is restoring the database. Please try again shortly.', 'tim-backup' ),
+			esc_html__( 'Database restore in progress', 'tim-backup' ),
+			array( 'response' => 503 )
+		);
+	}
+
+	/**
 	 * Rejects unsupported multisite operation.
 	 *
 	 * @return true|WP_Error
@@ -296,11 +469,51 @@ final class TIM_Backup_Plugin {
 		if ( is_multisite() ) {
 			return new WP_Error(
 				'tim_backup_multisite_unsupported',
-				__( 'TIM Backup Free 0.1.0 does not support WordPress Multisite.', 'tim-backup' )
+				__( 'TIM Backup Free 0.2.0 does not support WordPress Multisite.', 'tim-backup' )
+			);
+		}
+
+		if ( $this->restore_jobs->is_active() ) {
+			return new WP_Error(
+				'tim_backup_restore_job_active',
+				__( 'A database restore is in progress. Other backup changes are temporarily unavailable.', 'tim-backup' )
 			);
 		}
 
 		return true;
+	}
+
+	/**
+	 * Verifies capability and nonce for restore AJAX requests.
+	 *
+	 * @return void
+	 */
+	private function authorize_restore_ajax(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You are not allowed to restore backups.', 'tim-backup' ) ),
+				403
+			);
+		}
+
+		check_ajax_referer( 'tim_backup_restore_job', 'nonce' );
+	}
+
+	/**
+	 * Sends one normalized restore AJAX response.
+	 *
+	 * @param array<string, mixed>|WP_Error $result Result.
+	 * @return void
+	 */
+	private function send_restore_response( $result ): void {
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error(
+				array( 'message' => $result->get_error_message() ),
+				409
+			);
+		}
+
+		wp_send_json_success( $result );
 	}
 
 	/**

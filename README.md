@@ -1,10 +1,12 @@
 # TIM Backup
 
 TIM Backup is a security-focused local backup plugin for single-site WordPress.
-Version `0.1.0` creates full or database-only archives, verifies them, retains up
+Version `0.2.0` creates full or database-only archives, verifies them, retains up
 to three local copies, and provides authenticated downloads plus staged
-database-only restore. Full-file restore remains disabled until it has a
-crash-safe rollback implementation.
+database-only restore through a guided, resumable assistant. Restore progress is
+journaled outside the database and row imports continue in bounded batches.
+Full-file restore remains disabled until it has a crash-safe rollback
+implementation.
 
 ## Requirements
 
@@ -39,7 +41,8 @@ current WordPress release in WordPress Playground, creates and verifies database
 backups, rejects injected archive entries, tests protected three-archive
 rotation, validates German localization, and runs the official Plugin Check
 plugin. GitHub Actions additionally performs a destructive database restore test
-against MariaDB in an ephemeral WordPress installation.
+against MariaDB in an ephemeral WordPress installation, recreating the restore
+services between batches to exercise journal-based continuation.
 
 The complete product scope, architecture, security requirements, release process,
 and current status are maintained in [`PROJECT.md`](PROJECT.md).

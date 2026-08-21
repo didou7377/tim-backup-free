@@ -318,9 +318,136 @@
 	background: var(--tim-brand-dark);
 }
 
+.tim-restore-assistant__topbar {
+	margin: 0 0 18px;
+}
+
+.tim-restore-assistant__topbar .dashicons {
+	margin: 3px 4px 0 -3px;
+}
+
+.tim-restore-assistant__intro {
+	border-color: #cfd9ff;
+	background: linear-gradient(145deg, #fff, #f3f6ff);
+}
+
+.tim-restore-assistant__layout {
+	display: grid;
+	grid-template-columns: minmax(300px, 0.8fr) minmax(380px, 1.2fr);
+	gap: 18px;
+}
+
+.tim-restore-assistant__selection h2,
+.tim-restore-assistant__progress h2 {
+	margin-top: 0;
+}
+
+.tim-restore-assistant__selection select {
+	width: 100%;
+	max-width: none;
+	margin-top: 8px;
+}
+
+.tim-restore-assistant__selection.is-locked {
+	opacity: 0.72;
+}
+
+.tim-restore-assistant__warning {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 20px 0;
+	padding: 14px;
+	border: 1px solid #fedf89;
+	border-radius: 10px;
+	background: #fffaeb;
+}
+
+.tim-restore-assistant__warning .dashicons {
+	flex: 0 0 auto;
+	margin-top: 2px;
+	color: #b54708;
+}
+
+.tim-restore-assistant__warning p {
+	margin: 0;
+	color: #7a2e0e;
+}
+
+.tim-restore-assistant__confirm {
+	display: block;
+	margin: 0 0 18px;
+	line-height: 1.5;
+}
+
+.tim-restore-steps {
+	margin: 18px 0;
+}
+
+.tim-restore-step {
+	display: grid;
+	grid-template-columns: 28px 1fr;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 11px 0;
+	border-bottom: 1px solid var(--tim-line);
+	color: var(--tim-muted);
+}
+
+.tim-restore-step:last-child {
+	border-bottom: 0;
+}
+
+.tim-restore-step__icon {
+	width: 22px;
+	height: 22px;
+	font-size: 22px;
+}
+
+.tim-restore-step.is-done {
+	color: var(--tim-success);
+}
+
+.tim-restore-step.is-active {
+	color: var(--tim-ink);
+	font-weight: 600;
+}
+
+.tim-restore-step.is-active .dashicons-update {
+	color: var(--tim-brand);
+	animation: tim-restore-spin 1s linear infinite;
+}
+
+.tim-restore-step.is-error {
+	color: #b42318;
+	font-weight: 600;
+}
+
+.tim-restore-assistant__detail {
+	min-height: 22px;
+	margin: 14px 0;
+	font-weight: 600;
+}
+
+.tim-restore-assistant__error {
+	margin: 14px 0;
+	padding: 12px 14px;
+	border-left: 4px solid #d92d20;
+	background: #fef3f2;
+	color: #912018;
+}
+
+@keyframes tim-restore-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 @media screen and (max-width: 960px) {
 	.tim-backup__grid,
-	.tim-backup__grid--two {
+	.tim-backup__grid--two,
+	.tim-restore-assistant__layout {
 		grid-template-columns: 1fr;
 	}
 

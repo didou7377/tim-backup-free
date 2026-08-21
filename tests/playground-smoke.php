@@ -100,6 +100,92 @@ if ( is_wp_error( $deleted ) ) {
 	throw new RuntimeException( 'Tamper-test archive cleanup failed.' );
 }
 
+$restore      = new TIM_Backup_Restore_Service( $storage, $service );
+$restore_jobs = new TIM_Backup_Restore_Job_Service( $storage, $service, $restore );
+$job          = $restore_jobs->start( (string) $backups[0]['id'], 1 );
+
+if ( is_wp_error( $job ) || 'active' !== (string) $job['status'] ) {
+	throw new RuntimeException( 'Persistent restore job could not start.' );
+}
+
+$restore_jobs = new TIM_Backup_Restore_Job_Service( $storage, $service, $restore );
+$job          = $restore_jobs->status();
+
+if ( is_wp_error( $job ) || 'verify' !== (string) $job['phase'] ) {
+	throw new RuntimeException( 'Persistent restore job could not be resumed.' );
+}
+
+$journal_path = $storage->directory() . DIRECTORY_SEPARATOR . 'restore-job.json';
+$journal_json = file_get_contents( $journal_path );
+$journal_data = false === $journal_json ? null : json_decode( $journal_json, true );
+
+if ( ! is_array( $journal_data ) ) {
+	throw new RuntimeException( 'Restore journal could not be read for integrity testing.' );
+}
+
+$journal_data['backup_id'] = str_repeat( '0', 32 );
+file_put_contents( $journal_path, (string) wp_json_encode( $journal_data ) );
+$restore_jobs = new TIM_Backup_Restore_Job_Service( $storage, $service, $restore );
+
+if ( ! is_wp_error( $restore_jobs->status() ) ) {
+	throw new RuntimeException( 'Tampered restore journal was not rejected.' );
+}
+
+file_put_contents( $journal_path, (string) $journal_json );
+$restore_jobs = new TIM_Backup_Restore_Job_Service( $storage, $service, $restore );
+
+for ( $attempt = 0; $attempt < 100 && 'active' === (string) $job['status'] && 'prepare' !== (string) $job['phase']; ++$attempt ) {
+	$job = $restore_jobs->advance();
+
+	if ( is_wp_error( $job ) ) {
+		throw new RuntimeException( 'Restore preparation failed: ' . esc_html( $job->get_error_message() ) );
+	}
+}
+
+if ( 'prepare' !== (string) $job['phase'] ) {
+	throw new RuntimeException( 'Restore preparation did not reach staged table creation.' );
+}
+
+if ( ! $restore_jobs->is_maintenance_active() ) {
+	throw new RuntimeException( 'Restore maintenance marker was not enabled.' );
+}
+
+$count_before_retry = count( $storage->all() );
+$safety_retry       = $service->create( 'database', (string) $job['backupId'], (string) $job['safetyBackupId'] );
+
+if ( is_wp_error( $safety_retry ) || $count_before_retry !== count( $storage->all() ) ) {
+	throw new RuntimeException( 'Safety backup creation is not idempotent.' );
+}
+
+$job = $restore_jobs->cancel();
+
+if ( is_wp_error( $job ) || 'cancelled' !== (string) $job['status'] ) {
+	throw new RuntimeException( 'Restore job cancellation failed.' );
+}
+
+if ( $restore_jobs->is_maintenance_active() ) {
+	throw new RuntimeException( 'Restore maintenance marker was not removed after cancellation.' );
+}
+
+wp_set_current_user( 1 );
+$_GET['view']      = 'restore';
+$_GET['backup_id'] = (string) $backups[0]['id'];
+$admin             = new TIM_Backup_Admin( $storage, $restore_jobs );
+ob_start();
+$admin->render_page();
+$restore_markup = (string) ob_get_clean();
+unset( $_GET['view'], $_GET['backup_id'] );
+
+if (
+	! str_contains( $restore_markup, 'data-tim-restore-assistant' )
+	|| ! str_contains( $restore_markup, 'data-tim-restore-steps' )
+	|| ! str_contains( $restore_markup, 'value="' . (string) $backups[0]['id'] . '"' )
+) {
+	throw new RuntimeException( 'Guided restore interface did not render correctly.' );
+}
+
+$backups = $storage->all();
+
 foreach ( $backups as $backup ) {
 	$path         = $storage->archive_path( (string) $backup['id'] );
 	$verification = is_wp_error( $path ) ? $path : $service->verify( $path );

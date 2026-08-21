@@ -4,7 +4,7 @@ Tags: backup, restore, database, woocommerce, security
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,8 +26,8 @@ with a signature tied to the current WordPress installation.
 * One fixed weekly full-backup schedule through WordPress Cron.
 * Up to three plugin-managed local archives.
 * Authenticated downloads.
-* Verified database-only restore after explicit administrator confirmation and
-  creation of a current full safety backup.
+* Guided, resumable database-only restore with live progress and a current
+  database safety backup.
 * Failure-only email notifications to the WordPress administration address.
 * Support for WooCommerce tables, including HPOS tables that use the current site
   database prefix.
@@ -45,25 +45,36 @@ Backup archives use cryptographically random filenames and are stored outside th
 public document root. Downloads and state-changing actions require an
 administrator capability check and request nonce.
 
+During a database restore, normal site, REST, and Cron traffic receives a
+temporary maintenance response. Login and the protected restore assistant remain
+available so an interrupted restore can be resumed or cancelled.
+
 Local integrity checks cannot protect against an attacker who has fully
 compromised the server and obtained the WordPress secret keys. Keep independent
 off-site copies of important backups.
 
 = Important limitations =
 
-* Version 0.1.0 supports single-site WordPress only.
+* Version 0.2.0 supports single-site WordPress only.
 * WordPress Cron runs when the site receives traffic.
-* Full-file restore is intentionally unavailable in version 0.1.0 until its
+* Full-file restore is intentionally unavailable in version 0.2.0 until its
   staging, rollback, and crash-recovery path has dedicated integration coverage.
 * Full backups intentionally exclude `wp-config.php`, `.env*`, `.git`, and `.svn`
   content so that configuration secrets and repository internals are not copied
   into the archive.
 * Sites using database tables with foreign-key constraints require a manual
-  restore workflow in version 0.1.0.
+  restore workflow in version 0.2.0.
 * For deterministic, consistent database exports, prefixed objects must be
   InnoDB base tables with primary keys. Views and non-transactional tables are
   rejected with a clear failure notice.
+* Individual encoded database rows larger than 4 MiB are rejected so every
+  restore payload remains independently verifiable within a bounded request.
+* The restore traffic drain covers standard WordPress requests once TIM Backup
+  loads. Custom drop-ins or must-use plugins that write to the database during
+  their file bootstrap require an external web-server maintenance window.
 * Large sites may exceed hosting execution-time, disk-space, or memory limits.
+  Database import is split into resumable batches, but archive verification and
+  backup creation can still be limited by the hosting environment.
 
 == Installation ==
 
@@ -98,7 +109,7 @@ single-site installation.
 
 = Does it send successful-backup emails? =
 
-No. Version 0.1.0 sends email only when backup creation fails.
+No. Version 0.2.0 sends email only when backup creation fails.
 
 = Does it upload my data anywhere? =
 
@@ -112,18 +123,30 @@ before uninstalling if you do not want to retain them.
 
 == Changelog ==
 
+= 0.2.0 =
+
+* Added a guided database restore assistant with real server-side progress.
+* Added resumable staged imports, atomic activation, and crash-safe cleanup.
+* Added independently verified 4 MiB database chunks.
+* Added a database-independent journal key and idempotent safety backups.
+* Added request draining and protected maintenance mode during restore.
+
 = 0.1.0 =
 
 * Initial development release.
 * Added local full and database-only backups.
 * Added signed manifests and SHA-256 payload verification.
-* Added authenticated download, confirmed deletion, and database restore with an
-  automatic safety backup.
+* Added authenticated download, confirmed deletion, and a guided resumable
+  database restore with an automatic database safety backup.
 * Added fixed weekly backup scheduling and three-archive rotation.
 * Added an accessible tabbed administration interface.
 * Added English source strings and German translations.
 
 == Upgrade Notice ==
+
+= 0.2.0 =
+
+Adds the guided, resumable database restore assistant and restore hardening.
 
 = 0.1.0 =
 

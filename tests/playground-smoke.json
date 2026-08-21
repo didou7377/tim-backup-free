@@ -12,7 +12,7 @@
     },
     {
       "step": "runPHP",
-      "code": "<?php\nrequire_once '/wordpress/wp-load.php';\nrequire '/wordpress/wp-content/plugins/tim-backup/tests/playground-smoke.php';\n"
+      "code": "<?php\ndefine( 'WP_CLI', true );\nrequire_once '/wordpress/wp-load.php';\nrequire '/wordpress/wp-content/plugins/tim-backup/tests/playground-smoke.php';\n"
     },
     {
       "step": "installPlugin",
