@@ -155,22 +155,20 @@ changes require explicit backwards-compatibility handling.
 
 ## Known verification gaps before public release
 
-- Database-table swapping still requires destructive integration tests against
-  MySQL/MariaDB; Playground uses SQLite.
-- A destructive MariaDB restore workflow exists in GitHub Actions but remains
-  pending until the first repository push runs CI.
+- Destructive database backup and staged restore passed against MariaDB 11.4 in
+  GitHub Actions.
 - Full-file restore is disabled until a staged, journaled and crash-recoverable
   rollback mechanism has dedicated integration coverage.
 - Full backups need tests on large sites and constrained shared hosting.
 - WooCommerce and HPOS backup/restore require dedicated integration fixtures.
-- WordPress Coding Standards are configured but must pass in CI with Composer.
+- WordPress Coding Standards fixes from the first CI run are pending verification.
 - The administration interface needs browser, keyboard and screen-reader review.
 - WordPress.org assets and screenshots have not been prepared.
 
 ## Next milestones
 
 - Resolve all security-review findings.
-- Add MySQL/MariaDB restore and WooCommerce HPOS integration coverage.
+- Add WooCommerce HPOS integration coverage.
 - Test against large databases and constrained shared hosting.
 - Submit to WordPress.org only after all release checks pass without blockers.
 - Design Pro as a separate private repository after Free is stable.

@@ -135,7 +135,7 @@ final class TIM_Backup_Plugin {
 	public function handle_create(): void {
 		$this->authorize( 'tim_backup_create' );
 
-		$type   = isset( $_POST['backup_type'] ) ? sanitize_key( wp_unslash( $_POST['backup_type'] ) ) : '';
+		$type   = isset( $_POST['backup_type'] ) ? sanitize_key( wp_unslash( $_POST['backup_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 		$result = $this->can_operate();
 
 		if ( ! is_wp_error( $result ) ) {
@@ -160,8 +160,8 @@ final class TIM_Backup_Plugin {
 	public function handle_delete(): void {
 		$this->authorize( 'tim_backup_delete' );
 
-		$id           = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : '';
-		$confirmation = isset( $_POST['confirm_delete'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_delete'] ) ) : '';
+		$id           = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
+		$confirmation = isset( $_POST['confirm_delete'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_delete'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 
 		if ( '' === $id || ! hash_equals( $id, $confirmation ) ) {
 			$this->set_notice( 'error', __( 'The deletion was not confirmed.', 'tim-backup' ) );
@@ -195,8 +195,8 @@ final class TIM_Backup_Plugin {
 	public function handle_restore(): void {
 		$this->authorize( 'tim_backup_restore' );
 
-		$id           = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : '';
-		$confirmation = isset( $_POST['confirm_restore'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_restore'] ) ) : '';
+		$id           = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
+		$confirmation = isset( $_POST['confirm_restore'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_restore'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 
 		if ( '' === $id || ! hash_equals( $id, $confirmation ) ) {
 			$this->set_notice( 'error', __( 'The restore was not confirmed.', 'tim-backup' ) );
@@ -246,7 +246,7 @@ final class TIM_Backup_Plugin {
 	public function handle_download(): void {
 		$this->authorize( 'tim_backup_download' );
 
-		$id      = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : '';
+		$id      = isset( $_POST['backup_id'] ) ? sanitize_text_field( wp_unslash( $_POST['backup_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verifies this action's nonce first.
 		$ready   = $this->storage->ensure_directory();
 		$lock    = is_wp_error( $ready ) ? $ready : $this->storage->acquire_lock( 'operation', true );
 		$backup  = is_wp_error( $lock ) ? $lock : $this->storage->find( $id );

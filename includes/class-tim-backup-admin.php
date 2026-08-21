@@ -96,7 +96,7 @@ final class TIM_Backup_Admin {
 			'backups'  => __( 'Backups', 'tim-backup' ),
 			'system'   => __( 'System', 'tim-backup' ),
 		);
-		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
 
 		if ( ! isset( $tabs[ $tab ] ) ) {
 			$tab = 'overview';
@@ -123,9 +123,18 @@ final class TIM_Backup_Admin {
 
 			<nav class="nav-tab-wrapper tim-backup__tabs" aria-label="<?php esc_attr_e( 'TIM Backup sections', 'tim-backup' ); ?>">
 				<?php foreach ( $tabs as $key => $label ) : ?>
+					<?php
+					$tab_url = add_query_arg(
+						array(
+							'page' => 'tim-backup',
+							'tab'  => $key,
+						),
+						admin_url( 'admin.php' )
+					);
+					?>
 					<a
 						class="<?php echo esc_attr( 'nav-tab ' . ( $tab === $key ? 'nav-tab-active' : '' ) ); ?>"
-						href="<?php echo esc_url( add_query_arg( array( 'page' => 'tim-backup', 'tab' => $key ), admin_url( 'admin.php' ) ) ); ?>"
+						href="<?php echo esc_url( $tab_url ); ?>"
 						<?php if ( $tab === $key ) : ?>
 							aria-current="page"
 						<?php endif; ?>
@@ -158,9 +167,16 @@ final class TIM_Backup_Admin {
 	 * @return void
 	 */
 	private function render_overview(): void {
-		$backups = $this->storage->all();
-		$latest  = $backups[0] ?? null;
-		$next    = wp_next_scheduled( 'tim_backup_weekly_event' );
+		$backups    = $this->storage->all();
+		$latest     = $backups[0] ?? null;
+		$next       = wp_next_scheduled( 'tim_backup_weekly_event' );
+		$backups_url = add_query_arg(
+			array(
+				'page' => 'tim-backup',
+				'tab'  => 'backups',
+			),
+			admin_url( 'admin.php' )
+		);
 		?>
 		<div class="tim-backup__grid">
 			<section class="tim-card tim-card--accent">
@@ -180,7 +196,7 @@ final class TIM_Backup_Admin {
 					<h2><?php esc_html_e( 'Create your first backup', 'tim-backup' ); ?></h2>
 					<p><?php esc_html_e( 'No managed backup is available yet.', 'tim-backup' ); ?></p>
 				<?php endif; ?>
-				<a class="button button-primary button-hero" href="<?php echo esc_url( add_query_arg( array( 'page' => 'tim-backup', 'tab' => 'backups' ), admin_url( 'admin.php' ) ) ); ?>">
+				<a class="button button-primary button-hero" href="<?php echo esc_url( $backups_url ); ?>">
 					<?php esc_html_e( 'Manage backups', 'tim-backup' ); ?>
 				</a>
 			</section>

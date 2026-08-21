@@ -196,7 +196,13 @@ final class TIM_Backup_Restore_Service {
 				);
 			}
 
-			while ( false !== ( $line = fgets( $data_stream ) ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fgets
+			while ( true ) {
+				$line = fgets( $data_stream ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fgets
+
+				if ( false === $line ) {
+					break;
+				}
+
 				$encoded = json_decode( trim( $line ), true );
 
 				if ( ! is_array( $encoded ) ) {
@@ -222,7 +228,7 @@ final class TIM_Backup_Restore_Service {
 						);
 					}
 
-					$decoded = null === $value ? null : base64_decode( (string) $value, true );
+					$decoded = null === $value ? null : base64_decode( (string) $value, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Decodes binary-safe database transport, not executable code.
 
 					if ( null !== $value && false === $decoded ) {
 						fclose( $data_stream ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose

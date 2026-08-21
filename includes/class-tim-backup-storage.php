@@ -259,11 +259,12 @@ final class TIM_Backup_Storage {
 		);
 
 		$expired_items = array();
+		$item_count    = count( $items );
 
-		while ( count( $items ) > self::RETENTION_LIMIT ) {
+		while ( $item_count > self::RETENTION_LIMIT ) {
 			$expired_index = null;
 
-			for ( $index = count( $items ) - 1; $index >= 0; --$index ) {
+			for ( $index = $item_count - 1; $index >= 0; --$index ) {
 				if ( '' === $protected_id || ! hash_equals( (string) $items[ $index ]['id'], $protected_id ) ) {
 					$expired_index = $index;
 					break;
@@ -279,6 +280,7 @@ final class TIM_Backup_Storage {
 
 			$expired_items[] = $items[ $expired_index ];
 			array_splice( $items, $expired_index, 1 );
+			--$item_count;
 		}
 
 		update_option( self::INDEX_OPTION, $items, false );
@@ -402,7 +404,7 @@ final class TIM_Backup_Storage {
 	public function acquire_lock( string $operation, bool $shared = false ) {
 		$operation = sanitize_key( $operation );
 		$path      = $this->directory . DIRECTORY_SEPARATOR . $operation . '.lock';
-		$handle    = @fopen( $path, 'c+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- flock requires a persistent local file handle.
+		$handle    = @fopen( $path, 'c+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen,WordPress.PHP.NoSilencedErrors.Discouraged -- flock needs a persistent handle; failure is handled below.
 
 		if ( false === $handle || ! flock( $handle, ( $shared ? LOCK_SH : LOCK_EX ) | LOCK_NB ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_flock -- OS-level locking prevents stale-lock races.
 			if ( is_resource( $handle ) ) {

@@ -216,9 +216,10 @@ final class TIM_Backup_Backup_Service {
 
 		$allowed_entries = array_fill_keys( array_keys( $manifest['entries'] ), true );
 		$allowed_entries['tim-backup/manifest.json'] = true;
-		$seen_entries = array();
+		$seen_entries   = array();
+		$number_of_files = $zip->numFiles; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- ZipArchive exposes this public property.
 
-		for ( $index = 0; $index < $zip->numFiles; ++$index ) {
+		for ( $index = 0; $index < $number_of_files; ++$index ) {
 			$entry               = $zip->getNameIndex( $index );
 			$operating_system    = 0;
 			$external_attributes = 0;
@@ -511,7 +512,7 @@ final class TIM_Backup_Backup_Service {
 
 			$schema[ $table ] = (string) $create_row[1];
 			$temp_file       = $temp_path . DIRECTORY_SEPARATOR . hash( 'sha256', $table ) . '.jsonl';
-			$handle          = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Streaming prevents database exports from exhausting memory.
+			$handle          = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen,WordPress.PHP.NoSilencedErrors.Discouraged -- Streaming prevents memory exhaustion; failure is handled below.
 
 			if ( false === $handle ) {
 				return $fail(
@@ -525,7 +526,7 @@ final class TIM_Backup_Backup_Service {
 			$offset = 0;
 
 			do {
-				$query = $wpdb->prepare(
+				$query = $wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Identifiers are strictly validated before interpolation.
 					'SELECT * FROM `' . esc_sql( $table ) . '`' . $order_by . ' LIMIT %d OFFSET %d', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Identifiers are strictly validated.
 					self::DATABASE_BATCH_SIZE,
 					$offset
@@ -546,7 +547,7 @@ final class TIM_Backup_Backup_Service {
 					$encoded = array();
 
 					foreach ( $row as $column => $value ) {
-						$encoded[ $column ] = null === $value ? null : base64_encode( (string) $value );
+						$encoded[ $column ] = null === $value ? null : base64_encode( (string) $value ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Binary-safe database transport, not code obfuscation.
 					}
 
 					if ( false === fwrite( $handle, (string) wp_json_encode( $encoded ) . "\n" ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
@@ -560,8 +561,9 @@ final class TIM_Backup_Backup_Service {
 					}
 				}
 
-				$offset += self::DATABASE_BATCH_SIZE;
-			} while ( count( $rows ) === self::DATABASE_BATCH_SIZE );
+				$row_count = count( $rows );
+				$offset   += self::DATABASE_BATCH_SIZE;
+			} while ( $row_count === self::DATABASE_BATCH_SIZE );
 
 			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
